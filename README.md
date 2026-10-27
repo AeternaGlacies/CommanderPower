@@ -1,12 +1,7 @@
-# CommanderPower V10
+# CommanderPower V12 — Capacités rares et mythiques
 
-- Plus aucune illustration dans les boosters : les images sont choisies par le joueur.
-- Listes triées par rareté (commune → légendaire), puis par coût PP croissant, puis alphabétiquement.
-- Rareté indépendante du coût : Trample devient peu commune, mais conserve 2 PP.
-- Bonus de statistiques cumulables supplémentaires aux niveaux peu commun, rare et mythique.
-- Mana : symboles colorés et {2}/{S} peu communs, hybrides rares, phyrexians et énergie mythiques. {E} est une ressource et non du mana.
-- Nouveaux stickers de noms, dont des expressions occupant un emplacement de nom.
-- Types de créatures répartis selon la fréquence et le soutien tribal, avec coûts progressifs.
-- Sauvegardes locales conservées avec la même clé.
+Ajout de 12 capacités rares et 24 capacités mythiques maison, inspirées de mécaniques de cartes Magic. Les coûts PP sont des propositions propres à CommanderPower, **pas** des coûts officiels Unfinity. Les doublons textuels sont regroupés par le système existant. Aucune nouvelle capacité ne recherche de cartes dans la bibliothèque.
 
-Les valeurs de ces nouvelles récompenses sont des règles maison. Les textes et coûts des stickers Unfinity précédemment intégrés ne sont pas revérifiés dans cette version.
+Les raretés contrôlent les probabilités des boosters et ne correspondent pas directement aux PP. Les capacités mythiques ajoutées ne comportent aucun coût {T}.
+
+Installation : remplacer les fichiers du dépôt GitHub Pages. Les sauvegardes locales existantes restent sur la même clé. Les règles proposées demandent des tests d’équilibrage en Commander multijoueur.
