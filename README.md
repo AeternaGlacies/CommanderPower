@@ -8,3 +8,7 @@ V34 : image entière ou recadrage automatique (Éditeur > Image), disposition é
 
 
 V35 : mana normal/hybride gratuit (0 PP), phyrexian 1 PP, {C} donne +1 PP de budget par exemplaire (max +3). Les coûts PP et le solde sont affichés explicitement.
+
+V36: code de test inédit CPB-T-LEGEND2026B garantit une récompense légendaire; contrôle avant consommation du code.
+
+V37 : retrait de la récompense « Mana générique {2} » du catalogue et des tirages de boosters. Les symboles hybrides {2/W}, etc., et le coût générique de base sont conservés.

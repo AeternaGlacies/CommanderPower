@@ -192,7 +192,7 @@ const unfinityPending=unfinityPendingSheets.flatMap(sheet=>[1,2].map(slot=>({she
 [['stat_u30','+3/+0',4,'uncommon',3,0],['stat_u03','+0/+3',4,'uncommon',0,3],['stat_u22','+2/+2 (efficace)',4,'uncommon',2,2],['stat_r31','+3/+1',4,'rare',3,1],['stat_r13','+1/+3',4,'rare',1,3],['stat_r33','+3/+3',5,'rare',3,3],['stat_r40','+4/+0',4,'rare',4,0],['stat_r04','+0/+4',4,'rare',0,4],['stat_m44','+4/+4',5,'mythic',4,4],['stat_m50','+5/+0',4,'mythic',5,0],['stat_m05','+0/+5',4,'mythic',0,5],['stat_m55','+5/+5',7,'mythic',5,5]].forEach(([id,n,c,r,p,t])=>add(id,n,'stat',c,r,{p,t}));
 Object.entries(C).forEach(([code,n])=>add('mana'+code,'Mana '+n+' {'+code+'}','mana',0,'uncommon',{symbol:code,manaUnits:1}));
 // Mana spéciaux : les symboles hybrides et phyrexians sont des variantes de coût maison.
-add('manaC2','Mana générique {2}','mana',0,'uncommon',{symbol:'2',manaUnits:2});
+// Le mana générique {2} n'est plus une récompense obtenable ; le coût générique de base reste inchangé.
 add('manaSnow','Mana neigeux {S}','mana',0,'uncommon',{symbol:'S',manaUnits:1,note:'{S} est un coût neigeux ; exige du mana produit par une source neigeuse.'});
 add('manaColorless','Mana incolore {C}','mana',0,'uncommon',{symbol:'C',manaUnits:1});
 [['2/W','Blanc'],['2/U','Bleu'],['2/B','Noir'],['2/R','Rouge'],['2/G','Vert']].forEach(([symbol,label])=>add('hybridTwo'+symbol.replace('/',''),`Mana hybride générique ${label} {${symbol}}`,'mana',0,'rare',{symbol,manaUnits:2}));
@@ -413,7 +413,7 @@ const boosterOdds={
  legendary:[['common',10],['uncommon',30],['rare',35],['mythic',20],['legendary',5]],
  manafreak:[['common',10],['uncommon',30],['rare',35],['mythic',20],['legendary',5]]
 };
-function boosterType(code){if(code==='CPB-T-LEGEND2026')return 'legendary';const match=/^CPB-([SPLM])-[A-Z0-9_-]{6,}$/i.exec(code);return match?({S:'standard',P:'premium',L:'legendary',M:'manafreak'}[match[1].toUpperCase()]):'standard'}
+function boosterType(code){if(['CPB-T-LEGEND2026','CPB-T-LEGEND2026B'].includes(code))return 'legendary';const match=/^CPB-([SPLM])-[A-Z0-9_-]{6,}$/i.exec(code);return match?({S:'standard',P:'premium',L:'legendary',M:'manafreak'}[match[1].toUpperCase()]):'standard'}
 // Quatre emplacements : nom, type/stat, récompense variée limitée par rareté, puis surprise libre.
 const boosterSlots={
  standard:[
@@ -586,10 +586,12 @@ function openBooster(code){
  const drops=[];
  for(const [slotIndex,slot] of slots.entries()){
   const options=pool.filter(r=>(!slot.kinds||slot.kinds.includes(r.kind))&&(!slot.rarities||slot.rarities.includes(r.rarity))&&!(r.id==='legendword'&&drops.some(d=>d.id==='legendword')));
-  const reward=code==='CPB-T-LEGEND2026'&&slotIndex===3?weightedReward(options.filter(r=>r.rarity==='legendary'),[['legendary',1]]):weightedReward(options,probs);
+  const guaranteedLegendary=['CPB-T-LEGEND2026','CPB-T-LEGEND2026B'].includes(code);
+  const reward=guaranteedLegendary&&slotIndex===3?weightedReward(options.filter(r=>r.rarity==='legendary'),[['legendary',1]]):weightedReward(options,probs);
   if(!reward){toast('Catalogue incomplet pour ce booster : aucune récompense pour un emplacement');return}
   drops.push(reward);
  }
+ if(['CPB-T-LEGEND2026','CPB-T-LEGEND2026B'].includes(code)&&!drops.some(r=>r.rarity==='legendary')){toast('Erreur : le booster test doit contenir une légendaire. Aucun code consommé.');return}
  for(const r of drops)s.owned[r.id]=own(r.id)+1;
  s.usedCodes.push(code);
  const titles={standard:'Standard',premium:'Premium',legendary:'Légendaire',manafreak:'Mana Freak'};
