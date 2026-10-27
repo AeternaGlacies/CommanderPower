@@ -314,24 +314,24 @@ const boosterOdds={
  legendary:[['common',10],['uncommon',30],['rare',35],['mythic',20],['legendary',5]]
 };
 function boosterType(code){const match=/^CPB-([SPL])-[A-Z0-9_-]{6,}$/i.exec(code);return match?({S:'standard',P:'premium',L:'legendary'}[match[1].toUpperCase()]):'standard'}
-// Quatre emplacements fixes : nom, type/stat, type/stat, puis récompense libre.
+// Quatre emplacements : nom, type/stat, récompense variée limitée par rareté, puis surprise libre.
 const boosterSlots={
  standard:[
   {kinds:['name'],rarities:['common','uncommon']},
   {kinds:['type','stat'],rarities:['common','uncommon']},
-  {kinds:['type','stat'],rarities:['common','uncommon']},
+  {kinds:null,rarities:['common','uncommon']},
   {kinds:null,rarities:null}
  ],
  premium:[
   {kinds:['name'],rarities:['common','uncommon','rare']},
   {kinds:['type','stat'],rarities:['common','uncommon','rare']},
-  {kinds:['type','stat'],rarities:['uncommon','rare']},
+  {kinds:null,rarities:['uncommon','rare']},
   {kinds:null,rarities:null}
  ],
  legendary:[
   {kinds:['name'],rarities:['uncommon','rare','mythic','legendary']},
   {kinds:['type','stat'],rarities:['uncommon','rare','mythic']},
-  {kinds:['type','stat'],rarities:['rare','mythic']},
+  {kinds:null,rarities:['rare','mythic']},
   {kinds:null,rarities:null}
  ]
 };
@@ -351,35 +351,58 @@ function closeBoosterReveal(){
  if(overlay){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');overlay.innerHTML='';}
  document.body.classList.remove('reveal-open');
 }
+let boosterAudio=null;
+function revealSound(rarity){
+ try{
+  const Audio=window.AudioContext||window.webkitAudioContext;
+  if(!Audio)return;
+  boosterAudio=boosterAudio||new Audio();
+  if(boosterAudio.state==='suspended')boosterAudio.resume();
+  const notes={common:[392,523],uncommon:[392,523,659],rare:[523,659,784,1047],mythic:[440,659,880,1175,1760],legendary:[523,784,1047,1568,2093]}[rarity]||[392,523];
+  const now=boosterAudio.currentTime;
+  notes.forEach((hz,i)=>{
+   const o=boosterAudio.createOscillator(),g=boosterAudio.createGain(),t=now+i*.095;
+   o.type=['mythic','legendary'].includes(rarity)?'triangle':'sine';
+   o.frequency.setValueAtTime(hz,t);
+   g.gain.setValueAtTime(.0001,t);
+   g.gain.exponentialRampToValueAtTime(.055,t+.015);
+   g.gain.exponentialRampToValueAtTime(.0001,t+.26);
+   o.connect(g).connect(boosterAudio.destination);o.start(t);o.stop(t+.28);
+  });
+ }catch(e){/* L'audio reste facultatif. */}
+}
 function animateBooster(type,drops){
  closeBoosterReveal();
- const overlay=$('boosterReveal');
- const titles={standard:'Standard',premium:'Premium',legendary:'Légendaire'};
- const symbols={standard:'✦',premium:'✧',legendary:'✶'};
- overlay.className='booster-reveal open tier-'+type;
- overlay.setAttribute('aria-hidden','false');
+ const overlay=$('boosterReveal'),titles={standard:'Standard',premium:'Premium',legendary:'Légendaire'};
+ overlay.className='booster-reveal open tier-'+type;overlay.setAttribute('aria-hidden','false');
  document.body.classList.add('reveal-open');
- overlay.innerHTML=`<div class="reveal-content" role="dialog" aria-modal="true" aria-label="Ouverture du booster ${titles[type]}"><div class="reveal-heading">COMMANDERPOWER <span>· ${titles[type]}</span></div><div class="pack-stage"><div class="pack-glow"></div><div class="booster-pack"><span class="pack-symbol">${symbols[type]}</span><strong>COMMANDER<br>POWER</strong><small>${titles[type].toUpperCase()}</small></div></div><p class="reveal-prompt">Ouverture du booster…</p><div class="reveal-cards">${drops.map((r,i)=>`<article class="reveal-card rarity-border-${r.rarity}" style="--order:${i}"><span class="reveal-index">${i+1} / 4</span><span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>${kindNames[r.kind]||r.kind} · ${r.cost} PP</small></article>`).join('')}</div><button type="button" class="primary reveal-finish" id="finishReveal" hidden>Voir ma collection</button><button type="button" class="reveal-skip" id="skipReveal">Tout révéler »</button></div>`;
- const cards=[...overlay.querySelectorAll('.reveal-card')];
- const pack=overlay.querySelector('.booster-pack');
- const prompt=overlay.querySelector('.reveal-prompt');
- const finish=$('finishReveal'),skip=$('skipReveal');
- let done=false;
- function revealAll(){
-  if(done)return;
-  done=true;revealTimers.forEach(clearTimeout);revealTimers=[];
-  pack.classList.add('burst');overlay.classList.add('show-cards');
-  cards.forEach(c=>c.classList.add('revealed'));
-  prompt.textContent='Tes 4 récompenses sont ajoutées à ta collection !';
-  finish.hidden=false;skip.hidden=true;finish.focus();
- }
- skip.onclick=revealAll;
- finish.onclick=()=>{closeBoosterReveal();go('collection')};
+ overlay.innerHTML=`<div class="reveal-content" role="dialog" aria-modal="true" aria-label="Ouverture du booster ${titles[type]}"><div class="reveal-heading">COMMANDERPOWER <span>· ${titles[type]}</span></div><div class="pack-stage"><div class="pack-glow"></div><div class="booster-pack"><span class="pack-symbol">✦</span><strong>COMMANDER<br>POWER</strong><small>${titles[type].toUpperCase()}</small></div></div><p class="reveal-prompt" aria-live="polite">Touche la première carte pour la révéler !</p><div class="reveal-cards">${drops.map((r,i)=>`<button type="button" class="reveal-card rarity-border-${r.rarity}" data-reveal="${i}" aria-label="Révéler la carte ${i+1}"><span class="reveal-back">✦<small>CARTE ${i+1} · TOUCHER</small></span><span class="reveal-front"><span class="reveal-index">${i+1} / 4</span><span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>${kindNames[r.kind]||r.kind} · ${r.cost} PP</small></span><span class="rarity-sparkles" aria-hidden="true">✦ ✧ ✦</span></button>`).join('')}</div><button type="button" class="primary reveal-finish" id="finishReveal" hidden>Voir ma collection</button><button type="button" class="reveal-skip" id="skipReveal">Tout révéler »</button></div>`;
+ const cards=[...overlay.querySelectorAll('.reveal-card')],pack=overlay.querySelector('.booster-pack');
+ const prompt=overlay.querySelector('.reveal-prompt'),finish=$('finishReveal'),skip=$('skipReveal');
+ let index=0;
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- if(reduced){revealAll();return}
- revealTimers.push(setTimeout(()=>{pack.classList.add('burst');overlay.classList.add('show-cards');prompt.textContent='Découvre tes récompenses !'},1000));
- cards.forEach((card,i)=>revealTimers.push(setTimeout(()=>{card.classList.add('revealed');if(i===3){done=true;finish.hidden=false;skip.hidden=true;prompt.textContent='Tes 4 récompenses sont ajoutées à ta collection !'}},1500+i*700)));
+ function reveal(i){
+  if(i!==index)return;
+  const card=cards[i];
+  card.classList.remove('next');card.classList.add('revealed');card.disabled=true;
+  if(!reduced&&['rare','mythic','legendary'].includes(drops[i].rarity))card.classList.add('special-reveal');
+  revealSound(drops[i].rarity);
+  index++;
+  if(index===cards.length){
+   prompt.textContent='Tes 4 récompenses sont dans ta collection !';
+   finish.hidden=false;skip.hidden=true;finish.focus();
+  }else{
+   prompt.textContent=`Carte ${index} révélée. Touche la suivante !`;
+   cards[index].classList.add('next');
+  }
+ }
+ cards.forEach((card,i)=>card.onclick=()=>reveal(i));
+ skip.onclick=()=>{while(index<cards.length)reveal(index)};
+ finish.onclick=()=>{closeBoosterReveal();go('collection')};
+ pack.classList.add('burst');overlay.classList.add('show-cards');
+ cards[0].classList.add('next');
 }
+
 function openBooster(code){
  code=code.trim().replace(/^CEBOOST:/i,'').toUpperCase();
  if(!/^[A-Z0-9][A-Z0-9_-]{5,79}$/.test(code)){toast('Code invalide : 6 à 80 caractères (A-Z, 0-9, _ ou -)');return}

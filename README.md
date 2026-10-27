@@ -21,3 +21,31 @@ La sauvegarde existante est conservée.
 - Respect de l'option système « réduire les animations ».
 - Les récompenses et le QR utilisé sont sauvegardés **avant** l'animation.
 - Aucun changement aux probabilités et aux codes QR de test V13.
+
+## V16 — Nouvelle répartition
+
+Chaque booster donne **4 récompenses** :
+
+| Position | Standard | Premium | Légendaire |
+|---|---|---|---|
+| 1 : Nom | Commun / Peu commun | Commun / Peu commun / Rare | Peu commun / Rare / Mythique / Légendaire |
+| 2 : Type ou Stat | Commun / Peu commun | Commun / Peu commun / Rare | Peu commun / Rare / Mythique |
+| 3 : N'importe quelle catégorie (sauf image) | Commun / Peu commun | Peu commun / Rare | Rare / Mythique |
+| 4 : N'importe quelle catégorie (sauf image) | Aléatoire | Aléatoire | Aléatoire |
+
+Les probabilités du type de booster s'appliquent au sein des raretés autorisées. Animation V15 et QR de test conservés.
+
+## V17
+- Révélation manuelle des quatre cartes, une à une et dans l'ordre.
+- Sons synthétisés localement (Web Audio) : son distinct pour rares, mythiques et légendaires ; aucun fichier audio externe.
+- Mana affiché en symboles ronds avec couleurs de Magic (sans utiliser d'images officielles).
+- Types de créatures gratuits (0 PP), y compris pour les anciennes sauvegardes.
+- Texte de base « As The Prismatic Piper enters, choose a color. » masqué dès qu'une capacité est équipée.
+- La progression et les codes QR restent compatibles.
+
+## V18 — Ouverture interactive et éclats
+- Quatre cartes révélées une par une au toucher, dans l'ordre.
+- Sons progressifs par rareté ; mélodies différentes pour rare, mythique et légendaire.
+- Brillance dorée (rare), orange (mythique) et violette (légendaire), avec balayage foil et étincelles.
+- Bouton Tout révéler et accessibilité « réduire les animations ».
+- Tirages, codes QR et sauvegardes inchangés.

@@ -70,3 +70,46 @@ body.reveal-open{overflow:hidden}
 @keyframes packBurst{to{opacity:0;transform:scale(1.6) rotate(12deg)}}
 @media(max-width:350px){.pack-stage{height:180px}.reveal-card{min-height:125px;padding:10px 6px}.reveal-cards{gap:7px}}
 @media(prefers-reduced-motion:reduce){.pack-glow,.booster-pack{animation:none}.reveal-card{transition:none}.booster-pack.burst{opacity:0}.booster-reveal.show-cards .pack-stage{height:25px}}
+
+/* V17 — symboles de mana inspirés de la présentation Magic */
+#mana{display:flex;align-items:center;justify-content:flex-end;gap:2px;flex-wrap:wrap;max-width:54%}
+.mana-symbol{display:inline-flex;justify-content:center;align-items:center;width:clamp(18px,4.3vw,24px);height:clamp(18px,4.3vw,24px);border-radius:50%;border:1.5px solid #28241f;color:#191719;font:bold 13px Georgia,serif;box-shadow:inset 0 1px 2px #fff8,0 1px 1px #0005;line-height:1;flex:none}
+.reveal-card{cursor:pointer;font-family:inherit;color:inherit;position:relative}
+.reveal-card .reveal-front{display:none;flex-direction:column;align-items:center;gap:9px}
+.reveal-card .reveal-back{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;font-size:48px;color:#e9c77b;text-shadow:0 0 12px #f2cd76}
+.reveal-card .reveal-back small{font-size:9px;letter-spacing:1px;color:#eee}
+.reveal-card:not(.revealed){opacity:.72;transform:scale(.96);border-color:#5d6472}
+.reveal-card.next{opacity:1;transform:scale(1);border-color:#eac16c;box-shadow:0 0 20px #ebc05b80;animation:nextCardPulse 1s ease-in-out infinite alternate}
+.reveal-card.revealed{opacity:1;transform:scale(1);animation:cardTurn .38s ease-out}
+.reveal-card.revealed .reveal-back{display:none}
+.reveal-card.revealed .reveal-front{display:flex}
+.reveal-card:disabled{cursor:default}
+@keyframes nextCardPulse{to{box-shadow:0 0 8px #ebc05b44;transform:scale(.98)}}
+@keyframes cardTurn{from{transform:rotateY(80deg) scale(.9)}to{transform:rotateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.reveal-card.next,.reveal-card.revealed{animation:none}}
+
+/* V18 : ouverture tactile une par une + éclats de rareté */
+.reveal-card{position:relative;cursor:pointer;color:inherit;font-family:inherit;isolation:isolate}
+.reveal-card .reveal-front{display:none;flex-direction:column;align-items:center;gap:9px;position:relative;z-index:2}
+.reveal-card .reveal-back{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;font-size:48px;color:#e9c77b;text-shadow:0 0 12px #f2cd76}
+.reveal-card .reveal-back small{font-size:10px;letter-spacing:1px;color:#eee}
+.reveal-card:not(.revealed){opacity:.68;transform:scale(.96);border-color:#5d6472}
+.reveal-card.next{opacity:1;transform:scale(1);border-color:#eac16c;box-shadow:0 0 20px #ebc05b80;animation:nextCardPulse 1s ease-in-out infinite alternate}
+.reveal-card.revealed{opacity:1;transform:scale(1);animation:cardTurn .38s ease-out}
+.reveal-card.revealed .reveal-back{display:none}
+.reveal-card.revealed .reveal-front{display:flex}
+.reveal-card:disabled{cursor:default}
+.reveal-card .rarity-sparkles{position:absolute;inset:0;pointer-events:none;display:flex;justify-content:space-around;align-items:center;opacity:0;font-size:26px;z-index:3}
+.reveal-card.special-reveal.rarity-border-rare{--shine:#f4d368}
+.reveal-card.special-reveal.rarity-border-mythic{--shine:#ff8c48}
+.reveal-card.special-reveal.rarity-border-legendary{--shine:#d29aff}
+.reveal-card.special-reveal{animation:cardTurn .38s ease-out,rarityGlow 1.6s ease-out .1s both!important}
+.reveal-card.special-reveal .rarity-sparkles{color:var(--shine);animation:sparkBurst 1.4s ease-out .12s both}
+.reveal-card.special-reveal::after{content:'';position:absolute;inset:-30%;pointer-events:none;z-index:1;background:linear-gradient(110deg,transparent 32%,var(--shine) 49%,transparent 64%);opacity:0;transform:translateX(-90%) rotate(12deg);animation:foilSweep 1.15s ease-out .1s both}
+.reveal-card.rarity-border-legendary.revealed{border-color:#c77afa}
+@keyframes nextCardPulse{to{box-shadow:0 0 7px #ebc05b44;transform:scale(.98)}}
+@keyframes cardTurn{from{transform:rotateY(80deg) scale(.9)}to{transform:rotateY(0) scale(1)}}
+@keyframes rarityGlow{0%{box-shadow:0 0 0 var(--shine)}40%{box-shadow:0 0 40px 9px var(--shine)}100%{box-shadow:0 0 13px 2px var(--shine)}}
+@keyframes sparkBurst{0%{opacity:0;transform:scale(.25) rotate(-20deg)}35%{opacity:1;transform:scale(1.45) rotate(10deg)}100%{opacity:0;transform:scale(1.9) rotate(25deg)}}
+@keyframes foilSweep{0%{opacity:0;transform:translateX(-90%) rotate(12deg)}40%{opacity:.55}100%{opacity:0;transform:translateX(90%) rotate(12deg)}}
+@media(prefers-reduced-motion:reduce){.reveal-card.next,.reveal-card.revealed,.reveal-card.special-reveal,.reveal-card.special-reveal .rarity-sparkles,.reveal-card.special-reveal::after{animation:none!important}.reveal-card.special-reveal .rarity-sparkles{display:none}}
