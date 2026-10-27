@@ -130,3 +130,50 @@ body.reveal-open{overflow:hidden}
 .mana-official-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}
 .mana-badge.official-loaded .mana-official-img{opacity:1}
 .mana-badge.official-loaded .mana-fallback{visibility:hidden}
+
+/* V23 — texte de règles lisible, sans chevauchement avec la force/endurance */
+.mtg-card{--rules-font:clamp(12px,3.3vw,16px);--rules-min:29%;--rules-max:44%}
+.mtg-card .rules{
+ flex:0 1 auto;
+ min-height:var(--rules-min);
+ max-height:var(--rules-max);
+ overflow-y:auto;
+ overflow-x:hidden;
+ scrollbar-width:thin;
+ font-size:var(--rules-font);
+ line-height:1.28;
+ padding:9px 10px 42px;
+ white-space:pre-line;
+ overflow-wrap:break-word;
+}
+.mtg-card .rules[data-density="medium"]{--rules-font:clamp(11px,3vw,14px);--rules-min:34%;--rules-max:48%}
+.mtg-card .rules[data-density="dense"]{--rules-font:clamp(10px,2.7vw,12.5px);--rules-min:40%;--rules-max:56%}
+.mtg-card .art{flex:1 1 auto;min-height:55px}
+.mtg-card .power{z-index:2;bottom:12px;right:13px;pointer-events:none}
+#zoomMount .mtg-card .rules{font-size:var(--rules-font)}
+@media(max-height:730px){
+ .mtg-card .rules{padding-bottom:38px;line-height:1.2}
+ .mtg-card .rules[data-density="dense"]{--rules-font:11px;--rules-max:56%}
+}
+
+/* V24 : identité chromatique visible et permanente */
+.mtg-card{box-shadow:0 15px 50px #000b,0 0 0 3px var(--primary-glow,#f4e3b2) inset,0 0 0 2px #15120d}
+.mtg-card[data-color="DUAL"]{background:linear-gradient(125deg,var(--primary-color) 0%,var(--primary-color) 35%,var(--secondary-color) 75%,var(--secondary-color) 100%)}
+.mtg-card[data-color="GOLD"]{background:linear-gradient(145deg,#f9e9aa,#bc8a28 18%,#f7d46e 35%,#a9791f 60%,#f5d98b 90%)}
+.mtg-card[data-color="GOLD"] .namebar,.mtg-card[data-color="GOLD"] .typebar{border-color:#8b641c}
+.mtg-card .art{border:3px solid var(--primary-color,#2c2417);outline:1px solid #302319;outline-offset:1px}
+.mtg-card .namebar,.mtg-card .typebar{box-shadow:0 2px 3px #0005,inset 0 3px 0 var(--primary-color,#e6c98b)}
+.mana-official,.mana-badge,.mana-symbol{border:2px solid #312b24!important;box-shadow:0 0 0 1px #e9d6a6,0 1px 2px #0008!important;border-radius:50%}
+#mana img{border:1.5px solid #302a22;border-radius:50%;box-shadow:0 0 0 1px #e8d6a7,0 1px 3px #0008}
+.fixed-color{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:13px;margin:14px 0;border:1px solid #9b804f;border-radius:12px;background:#202735}
+.fixed-color strong{width:100%}.fixed-color small{width:100%;color:#b8c0cb;line-height:1.4}
+.color-dot,.color-choice-dot{width:22px;height:22px;border-radius:50%;background:var(--dot,var(--color));border:2px solid #fff9;box-shadow:0 0 0 2px #272727}
+.color-creation[hidden]{display:none!important}.color-creation{position:fixed;inset:0;z-index:100;background:#090b12f5;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.color-creation-dialog{max-width:480px;width:100%;background:#1c2432;border:2px solid #c6a46a;border-radius:18px;padding:23px;color:#f3e9d7;box-shadow:0 20px 65px #000d}
+.color-creation-dialog p{line-height:1.5}.color-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:9px}
+.color-choices button{display:flex;gap:10px;align-items:center;justify-content:flex-start;padding:14px 10px;background:#303848;color:#fff;border:1px solid var(--color);border-radius:10px}
+.color-choice-dot{flex:none}
+
+.shapeshifter-toggle{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;padding:12px;border:1px solid #9a8455;border-radius:12px;background:#252c3a;color:#f4e6c4}
+.shapeshifter-toggle input{width:auto;accent-color:#d8b568}
+.shapeshifter-toggle small{display:block;width:100%;color:#b9c0cc;margin-left:25px}

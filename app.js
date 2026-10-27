@@ -269,8 +269,10 @@ for(const r of rewards){if(r.kind!=='ability')continue;const t=(r.text||r.name).
  // Les effets puissants mais conditionnels ne sont pas automatiquement mythiques.
  if(r.rarity==='mythic'&&(/your first (instant|noncreature|spell)|you gain [123] life|scry [12]|draw a card, then discard/.test(t)))r.rarity='rare';
 }
-const base={owned:{The:1,Prismatic:1,Piper:1},words:['The','Prismatic','Piper'],baseColor:'W',mode:'none',delta:0,hasX:false,equipped:[],artId:'',usedCodes:[],customWord:'',image:'',bonus:0};
+const base={owned:{The:1,Prismatic:1,Piper:1},words:['The','Prismatic','Piper'],baseColor:'W',colorChosen:false,shapeshifter:true,mode:'none',delta:0,hasX:false,equipped:[],artId:'',usedCodes:[],customWord:'',image:'',bonus:0};
 function load(){try{let v=JSON.parse(localStorage.getItem(KEY));return v&&typeof v==='object'?{...structuredClone(base),...v}:structuredClone(base)}catch{return structuredClone(base)}}let s=load();
+// Anciennes sauvegardes : la couleur déjà choisie devient permanente.
+if(localStorage.getItem(KEY)!==null && s.colorChosen!==true)s.colorChosen=true;
 // Conversion des anciennes sauvegardes vers les identifiants dédoublonnés.
 for(const [oldId,newId] of Object.entries(abilityAliases)){if(s.owned[oldId]){s.owned[newId]=(s.owned[newId]||0)+s.owned[oldId];delete s.owned[oldId]}s.equipped=s.equipped.map(id=>id===oldId?newId:id)}
 s.equipped=[...new Set(s.equipped.filter(id=>{const r=rewards.find(x=>x.id===id);return r?.kind==='ability'})) ,...s.equipped.filter(id=>{const r=rewards.find(x=>x.id===id);return r?.kind!=='ability'})];
@@ -284,7 +286,7 @@ const generic=()=>Math.max(0,5+(s.mode==='increase'?s.delta:0)-(s.mode==='reduce
 const mana=()=>`${s.hasX?'{X}':''}{${generic()}}`+equipped().filter(r=>r.kind==='mana'&&!r.energy).map(r=>'{'+r.symbol+'}').join('');
 const name=()=>s.words.filter(Boolean).map(w=>get(w)?.word||w).join(' ')||'The Prismatic Piper';
 const power=()=>{let p=3,t=3;equipped().forEach(r=>{p+=r.p||0;t+=r.t||0});return `${p}/${t}`};
-const colors=()=>{let arr=[s.baseColor,...equipped().filter(r=>r.kind==='mana').flatMap(r=>r.symbol.match(/[WUBRG]/g)||[])];return [...new Set(arr)]};
+const colors=()=>{let arr=[s.baseColor,...equipped().filter(r=>r.kind==='mana'&&!r.energy).flatMap(r=>r.symbol.match(/[WUBRG]/g)||[])];return [...new Set(arr.filter(c=>'WUBRG'.includes(c)))]};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){toast('Stockage saturé : exportez votre sauvegarde ou choisissez une image plus petite.')}}
 function toast(t){$('toast').textContent=t;$('toast').style.display='block';clearTimeout(window.toastTimeout);window.toastTimeout=setTimeout(()=>$('toast').style.display='none',3200)}
 // Symboles de mana en SVG intégrés, sans images externes.
@@ -334,12 +336,20 @@ function manaCostVisual(){
  for(const r of equipped().filter(r=>r.kind==='mana'&&!r.energy))tokens.push(r.symbol);
  return tokens.map(manaBadge).join('');
 }
+const cardPalette={W:'#f4e3b2',U:'#3186c3',B:'#716078',R:'#d65b3e',G:'#478c58'};
 function card(){
- let card=$('card');card.dataset.color=colors().length===1?colors()[0]:'M';
+ let card=$('card');const activeColors=colors();card.dataset.color=activeColors.length===1?activeColors[0]:activeColors.length===2?'DUAL':'GOLD';card.style.setProperty('--primary-color',cardPalette[s.baseColor]||cardPalette.W);card.style.setProperty('--secondary-color',cardPalette[activeColors.find(c=>c!==s.baseColor)]||cardPalette.W);card.style.setProperty('--primary-glow',cardPalette[s.baseColor]||cardPalette.W);
  $('cardName').textContent=name();$('mana').innerHTML=manaCostVisual();
- $('types').textContent='Legendary Creature — Shapeshifter'+equipped().filter(r=>r.kind==='type').map(r=>' '+r.type).join('');
+ const creatureTypeNames=[...(s.shapeshifter!==false?['Shapeshifter']:[]),...equipped().filter(r=>r.kind==='type').map(r=>r.type).filter(t=>t!=='Shapeshifter')];
+ $('types').textContent='Legendary Creature'+(creatureTypeNames.length?' — '+creatureTypeNames.join(' '):'');
  const abilities=equipped().filter(r=>r.kind==='ability'&&(!r.requiresX||s.hasX)).map(r=>r.text);
- $('rules').textContent=abilities.length?abilities.join('\n'):'As The Prismatic Piper enters, choose a color.';
+ const rulesText=abilities.length?abilities.join('\n'):'As The Prismatic Piper enters, choose a color.';
+ $('rules').textContent=rulesText;
+ // Taille de police et zone de texte ajustées au contenu, sans recouvrir la force/endurance.
+ const rulesBox=$('rules');
+ const n=rulesText.length, lines=rulesText.split('\n').length;
+ rulesBox.dataset.density=n>270||lines>=4?'dense':n>165||lines>=3?'medium':'normal';
+
  $('power').textContent=power();
  let art=equipped().find(r=>r.kind==='art');
  $('art').style.backgroundImage=s.image?`url("${s.image.replace(/["\\]/g,'')}")`:(art?art.gradient:'radial-gradient(circle at 50% 35%,#f3c178 0%,#aa4b5e 28%,#392b65 60%,#0d1931 100%)');
@@ -358,17 +368,17 @@ function matchesFilters(r,prefix){let v=filters[prefix];return (v.rarity==='all'
 function item(r,editable=false){let count=own(r.id),used=eq(r.id),locked=!count,why=canEquip(r),status=locked?'🔒 À débloquer':used?'✓ Équipée':'✓ Possédée';let buttons=editable&&!locked?`<div class="item-actions"><button data-add="${html(r.id)}" ${why?'disabled':''} aria-label="Équiper ${html(r.name)}">＋ Équiper</button>${used?`<button data-remove="${html(r.id)}" aria-label="Retirer ${html(r.name)}">− Retirer</button>`:''}</div>`:'';return `<article class="item ${locked?'locked':'unlocked'} ${used?'is-equipped':''} rarity-border-${r.rarity}"><div class="item-head"><span class="status ${locked?'status-locked':used?'status-equipped':'status-owned'}">${status}</span>${rarityBadge(r)}</div><div class="item-title">${html(r.name)}</div>${r.text&&r.text!==r.name?`<p class="item-description">${html(r.text)}</p>`:''}<div class="item-foot"><span>${r.cost} PP</span>${r.source?`<span>Sticker Unfinity · feuille ${r.sheet}</span>`:''}<span>${count} possédé${count>1?'s':''}${used?' · '+used+' équipé'+(used>1?'s':''):''}</span></div>${buttons}</article>`}
 function sortRewards(list){const rank={common:0,uncommon:1,rare:2,mythic:3,legendary:4};return list.sort((a,b)=>(rank[a.rarity]??9)-(rank[b.rarity]??9)||a.cost-b.cost||a.name.localeCompare(b.name,'fr'))}
 function listEditor(kind){let list=sortRewards(rewards.filter(r=>r.kind===kind&&matchesFilters(r,'edit')));return `<p class="result-count">${list.length} résultat(s)</p>`+(list.map(r=>item(r,true)).join('')||'<p class="empty-state">Aucune récompense ne correspond à ces filtres.</p>')}
-function editor(){let e=$('editor');let explanations={abilities:'Maximum 3 capacités équipées. Les coûts des stickers Unfinity correspondent à leurs tickets ; les autres coûts sont des propositions.',stats:'Bonus cumulables. Chaque exemplaire équipé ajoute ses statistiques.',types:'Ajoute des types de créatures à Shapeshifter.',mana:'Les symboles colorés, hybrides, neigeux et phyrexians modifient le coût. L’énergie est une ressource distincte (règle maison). Réduction et augmentation sont exclusives ; X reste indépendant.',name:'3 mots maximum. Chaque occurrence utilise un exemplaire de ta collection.',art:'Image personnelle uniquement : choisis une image de ton téléphone ou une URL HTTPS. Aucune image dans les boosters.'};let kind={abilities:'ability',stats:'stat',types:'type',mana:'mana',name:'name',art:'art'}[tab];let controls=`<p class="sectionhelp">${explanations[tab]}</p>${filterControls('edit')}`;
-if(tab==='abilities'||tab==='stats'||tab==='types')e.innerHTML=controls+'<div id="editResults">'+listEditor(kind)+'</div>';
+function editor(){let e=$('editor');let explanations={abilities:'Maximum 3 capacités équipées. Les coûts des stickers Unfinity correspondent à leurs tickets ; les autres coûts sont des propositions.',stats:'Bonus cumulables. Chaque exemplaire équipé ajoute ses statistiques.',types:'Shapeshifter est présent au départ, mais tu peux le retirer ou le réactiver gratuitement.',mana:'Les symboles colorés, hybrides, neigeux et phyrexians modifient le coût. L’énergie est une ressource distincte (règle maison). Réduction et augmentation sont exclusives ; X reste indépendant.',name:'3 mots maximum. Chaque occurrence utilise un exemplaire de ta collection.',art:'Image personnelle uniquement : choisis une image de ton téléphone ou une URL HTTPS. Aucune image dans les boosters.'};let kind={abilities:'ability',stats:'stat',types:'type',mana:'mana',name:'name',art:'art'}[tab];let controls=`<p class="sectionhelp">${explanations[tab]}</p>${filterControls('edit')}`;
+if(tab==='abilities'||tab==='stats'||tab==='types'){const shapeshifterToggle=tab==='types'?`<label class="shapeshifter-toggle"><input type="checkbox" id="shapeshifterToggle" ${s.shapeshifter!==false?'checked':''}> Conserver le type de départ : <strong>Shapeshifter</strong> <small>Gratuit · activable et désactivable à volonté</small></label>`:'';e.innerHTML=controls+shapeshifterToggle+'<div id="editResults">'+listEditor(kind)+'</div>';} 
 if(tab==='name'){let options=(i)=>'<option value="">— Vide —</option>'+Object.keys(s.owned).filter(w=>!get(w)||get(w)?.kind==='name').filter(w=>own(w)>0).map(w=>`<option value="${html(w)}" ${s.words[i]===w?'selected':''}>${html(get(w)?.word||w.replace(/^wordExtra/,''))} (${own(w)})</option>`).join('');e.innerHTML=`<p class="sectionhelp">${explanations.name}</p><div class="wordslots">${[0,1,2].map(i=>`<select data-word="${i}">${options(i)}</select>`).join('')}</div><p class="pill">${html(name())}</p>${own('legendword')?`<label>Mot légendaire personnalisé<input id="customWord" maxlength="24" value="${html(s.customWord)}" placeholder="Un seul mot"></label><button class="primary" id="customSave">Créer mon mot</button>`:''}${filterControls('edit')}<div id="editResults">${listEditor('name')}</div>`}
-if(tab==='mana')e.innerHTML=`<p class="sectionhelp">${explanations.mana}</p><label>Couleur de départ<select id="baseColor">${Object.entries(C).map(([k,v])=>`<option value="${k}" ${s.baseColor===k?'selected':''}>${v}</option>`).join('')}</select></label><label>Modification du mana<select id="manaMode"><option value="none" ${s.mode==='none'?'selected':''}>Aucune</option><option value="reduce" ${s.mode==='reduce'?'selected':''}>Réduction (3 PP par mana)</option><option value="increase" ${s.mode==='increase'?'selected':''}>Augmentation (+2 PP par mana)</option></select></label><label>Quantité (0 à 3)<input id="manaDelta" type="number" min="0" max="3" value="${s.delta}"></label><label class="row"><input id="hasX" type="checkbox" style="width:auto" ${s.hasX?'checked':''}> Activer {X}</label><p class="pill">Coût actuel : ${html(mana())}</p>${filterControls('edit')}<div id="editResults">${listEditor('mana')}</div>`;
+if(tab==='mana')e.innerHTML=`<p class="sectionhelp">${explanations.mana}</p><div class="fixed-color"><strong>Couleur d'origine permanente</strong><span class="color-dot" style="--dot:${cardPalette[s.baseColor]}"></span><span>${C[s.baseColor]}</span><small>La deuxième couleur vient du mana équipé. Trois couleurs ou plus donnent un fond doré.</small></div><label>Modification du mana<select id="manaMode"><option value="none" ${s.mode==='none'?'selected':''}>Aucune</option><option value="reduce" ${s.mode==='reduce'?'selected':''}>Réduction (3 PP par mana)</option><option value="increase" ${s.mode==='increase'?'selected':''}>Augmentation (+2 PP par mana)</option></select></label><label>Quantité (0 à 3)<input id="manaDelta" type="number" min="0" max="3" value="${s.delta}"></label><label class="row"><input id="hasX" type="checkbox" style="width:auto" ${s.hasX?'checked':''}> Activer {X}</label><p class="pill">Coût actuel : ${html(mana())}</p>${filterControls('edit')}<div id="editResults">${listEditor('mana')}</div>`;
 if(tab==='art')e.innerHTML=`<p class="sectionhelp">${explanations.art}</p><label>📷 Choisir une image sur mon téléphone<input id="imageFile" type="file" accept="image/*"></label><button id="removeImage" type="button">Retirer mon image</button><label>Image en ligne (HTTPS)<input id="imageURL" type="url" value="${html(s.image.startsWith('https://')?s.image:'')}" placeholder="https://..."></label><button id="setImage" class="primary">Appliquer</button>`;
 }
 const rarityNames={common:'Commune',uncommon:'Peu commune',rare:'Rare',mythic:'Mythique',legendary:'Légendaire'};
 function rarityBadge(r){return `<span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span>`}
 function collection(){if($('collectionFilters')&&!$('collectionFilters').children.length)$('collectionFilters').innerHTML=filterControls('collection');let list=sortRewards(rewards.filter(r=>r.kind!=='art'&&(filter==='all'||r.kind===filter)&&matchesFilters(r,'collection')));$('collectionList').innerHTML=`<p class="result-count">${list.length} résultat(s)</p>`+(list.map(r=>item(r,false)).join('')||'<p class="empty-state">Aucune récompense ne correspond à ces filtres.</p>');let total=Object.values(s.owned).reduce((a,b)=>a+b,0);$('collectionSummary').textContent=`${total} récompenses et mots possédés • ${s.usedCodes.length} booster(s) ouverts`}
 function changeWord(i,v){let proposed=[...s.words];proposed[i]=v;let used=proposed.filter(w=>w===v).length;if(v&&used>own(v)){toast('Tu ne possèdes pas assez de ce mot');editor();return}s.words=proposed;render()}
-function updateMana(){let mode=$('manaMode').value,delta=Math.max(0,Math.min(3,Number($('manaDelta').value)||0)),x=$('hasX').checked,col=$('baseColor').value;let prev={mode:s.mode,delta:s.delta,hasX:s.hasX,baseColor:s.baseColor};Object.assign(s,{mode,delta,hasX:x,baseColor:col});if(points()>budget()||generic()<0){Object.assign(s,prev);toast('Configuration invalide : budget ou coût de mana');editor();return}render()}
+function updateMana(){let mode=$('manaMode').value,delta=Math.max(0,Math.min(3,Number($('manaDelta').value)||0)),x=$('hasX').checked;let prev={mode:s.mode,delta:s.delta,hasX:s.hasX};Object.assign(s,{mode,delta,hasX:x});if(points()>budget()||generic()<0){Object.assign(s,prev);toast('Configuration invalide : budget ou coût de mana');editor();return}render()}
 // Codes de test: CPB-S-..., CPB-P-..., CPB-L-... (identifiant unique local).
 // Les codes libres historiques continuent à fonctionner comme boosters Standard.
 const boosterOdds={
@@ -572,7 +582,7 @@ async function imageFromPhone(file){
   render();toast('Image enregistrée sur cet appareil !');
  }finally{bitmap.close?.()}
 }
-$('editor').addEventListener('change',async e=>{if(e.target.id==='imageFile'){let file=e.target.files?.[0];if(file){try{await imageFromPhone(file)}catch(err){toast(err.message||'Impossible de charger cette image')}}return;}if(e.target.matches('[data-word]'))changeWord(Number(e.target.dataset.word),e.target.value);if(['manaMode','manaDelta','hasX','baseColor'].includes(e.target.id))updateMana()});
+$('editor').addEventListener('change',async e=>{if(e.target.id==='shapeshifterToggle'){s.shapeshifter=e.target.checked;render();return;}if(e.target.id==='imageFile'){let file=e.target.files?.[0];if(file){try{await imageFromPhone(file)}catch(err){toast(err.message||'Impossible de charger cette image')}}return;}if(e.target.matches('[data-word]'))changeWord(Number(e.target.dataset.word),e.target.value);if(['manaMode','manaDelta','hasX'].includes(e.target.id))updateMana()});
 $('redeemBtn').onclick=() => openBooster($('codeInput').value);$('codeInput').addEventListener('keydown',e=>{if(e.key==='Enter')openBooster(e.target.value)});
 async function startCamera(){if(!('BarcodeDetector' in window)){toast('Scanner non disponible ici : saisissez le code du QR manuellement');return}try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});$('camera').srcObject=stream;$('camera').hidden=false;let detector=new BarcodeDetector({formats:['qr_code']});scanTimer=setInterval(async()=>{if(!stream)return;try{let codes=await detector.detect($('camera'));if(codes.length){let raw=codes[0].rawValue;let code=raw.startsWith('CEBOOST:')?raw.slice(8):raw;stopCamera();$('codeInput').value=code;toast('QR détecté : confirmez pour ouvrir le booster')}}catch{}},450)}catch{toast('Caméra indisponible : utilisez le champ de code')}}
 function stopCamera(){clearInterval(scanTimer);scanTimer=null;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('camera').hidden=true;$('camera').srcObject=null}$('startCamera').onclick=startCamera;$('stopCamera').onclick=stopCamera;
@@ -581,3 +591,15 @@ $('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify({version:2,state:s
 $('importInput').onchange=async e=>{let f=e.target.files?.[0];if(!f)return;try{let data=JSON.parse(await f.text()),v=data.state||data;if(!v.owned||!Array.isArray(v.equipped)||!Array.isArray(v.words)||!Array.isArray(v.usedCodes))throw Error('Format invalide');s={...structuredClone(base),...v};s.equipped=s.equipped.filter(id=>!!get(id));render();toast('Sauvegarde importée')}catch{toast('Fichier de sauvegarde invalide')}};
 $('resetBtn').onclick=()=>{if(confirm('Supprimer toutes les récompenses et les codes utilisés sur cet appareil ?')){s=structuredClone(base);render();go('home');toast('Progression réinitialisée')}};
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));render();
+
+// Couleur d'origine : une seule décision lors de la création du personnage.
+function showColorCreation(){
+ if(s.colorChosen)return;
+ const overlay=$('colorCreation');if(!overlay)return;
+ overlay.hidden=false;
+ overlay.innerHTML=`<div class="color-creation-dialog" role="dialog" aria-modal="true" aria-labelledby="colorCreationTitle"><h2 id="colorCreationTitle">Choisis la couleur de ton commandant</h2><p>Cette couleur est permanente. Tu pourras obtenir d'autres couleurs grâce aux récompenses de mana.</p><div class="color-choices">${Object.entries(C).map(([key,label])=>`<button type="button" data-initial-color="${key}" style="--color:${cardPalette[key]}"><span class="color-choice-dot"></span>${html(label)}</button>`).join('')}</div><p class="note">Choix définitif pour ce personnage.</p></div>`;
+ overlay.querySelectorAll('[data-initial-color]').forEach(button=>button.addEventListener('click',()=>{
+  s.baseColor=button.dataset.initialColor;s.colorChosen=true;save();overlay.hidden=true;render();
+ }));
+}
+showColorCreation();

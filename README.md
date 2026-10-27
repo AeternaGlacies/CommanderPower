@@ -76,3 +76,25 @@ Les probabilités du type de booster s'appliquent au sein des raretés autorisé
 - Source des SVG : https://svgs.scryfall.io/card-symbols/ (illustrations Magic: The Gathering, Wizards of the Coast). Projet non officiel.
 
 V22 : Affichage des mots sans identifiants techniques wordExtra dans les menus; aperçu du nom rétabli.
+
+## V23 — Lisibilité de la carte
+- Zone de règles qui s'adapte à la longueur des capacités équipées.
+- Police légèrement réduite pour les descriptions longues, sans changer le texte.
+- Espace réservé sous le texte pour éviter que la force/endurance masque la dernière ligne.
+- La zone de règles reste défilable pour les textes exceptionnellement longs.
+- Mise en page compatible avec la carte agrandie.
+
+## V24 — Couleurs et mana
+- Nouveau personnage : choix obligatoire d'une couleur de départ, enregistrée définitivement.
+- Sauvegardes existantes : couleur actuelle conservée et verrouillée.
+- Couleur unique : contour et bordure de l'illustration renforcés.
+- Deux couleurs différentes : cadre bicolore avec la couleur d'origine dominante.
+- Trois couleurs ou plus : cadre doré.
+- Mana officiel : contour discret autour de chaque symbole de coût.
+- Les couleurs supplémentaires sont déterminées par les symboles de mana équipés.
+
+## V25 — Type Shapeshifter facultatif
+- Shapeshifter est activé par défaut sur tous les commandants.
+- Case à cocher dans Éditeur → Types pour le retirer ou le réactiver gratuitement.
+- Les autres types restent inchangés.
+- Anciennes sauvegardes compatibles : absence du champ = Shapeshifter actif.
