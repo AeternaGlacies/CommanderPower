@@ -1,11 +1,12 @@
-# CommanderPower V8 — Catalogue Unfinity complet
+# CommanderPower V10
 
-96 emplacements de capacités issus des 48 feuilles de stickers Unfinity, avec coûts de tickets convertis à l’identique en PP. Les raretés sont propres à CommanderPower (elles ne proviennent pas des feuilles officielles).
+- Plus aucune illustration dans les boosters : les images sont choisies par le joueur.
+- Listes triées par rareté (commune → légendaire), puis par coût PP croissant, puis alphabétiquement.
+- Rareté indépendante du coût : Trample devient peu commune, mais conserve 2 PP.
+- Bonus de statistiques cumulables supplémentaires aux niveaux peu commun, rare et mythique.
+- Mana : symboles colorés et {2}/{S} peu communs, hybrides rares, phyrexians et énergie mythiques. {E} est une ressource et non du mana.
+- Nouveaux stickers de noms, dont des expressions occupant un emplacement de nom.
+- Types de créatures répartis selon la fréquence et le soutien tribal, avec coûts progressifs.
+- Sauvegardes locales conservées avec la même clé.
 
-Les 32 emplacements manquants ont été ajoutés à la V7. Les filtres, la collection, les boosters, la sauvegarde locale et l’affichage mobile sont conservés. Les capacités Unfinity avec compteurs de tickets restent telles quelles, sans implémentation d’une économie de tickets en partie.
-
-Les textes des capacités ajoutées sont des transcriptions condensées en anglais : en cas de doute sur une formulation, consulter la feuille officielle.
-
-Sources : https://mtg.wtf/set/sunf et https://mtg.wtf/set/sunf?page=2
-
-Déploiement : déposer tous les fichiers du ZIP à la racine du dépôt GitHub Pages CommanderPower.
+Les valeurs de ces nouvelles récompenses sont des règles maison. Les textes et coûts des stickers Unfinity précédemment intégrés ne sont pas revérifiés dans cette version.

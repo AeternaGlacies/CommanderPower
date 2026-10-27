@@ -18,3 +18,14 @@
 .item.locked .item-title{color:#c4c8ce}.result-count{font-size:12px;color:#aeb9c8;margin:12px 0}.empty-state{padding:18px;background:#202733;border-radius:10px;color:#d3d8e1}
 .rarity-border-common{border-left-color:#a5acb6}.rarity-border-uncommon{border-left-color:#46b4f3}.rarity-border-rare{border-left-color:#f0c75c}.rarity-border-mythic{border-left-color:#ee8748}.rarity-border-legendary{border-left-color:#c77afa}
 .search-label{margin:6px 0 14px}.filter-grid{margin-top:10px}
+
+/* V9 : lecture mobile, statuts et raretés séparés */
+.item{display:block;position:relative;padding:15px;margin:11px 0;background:#202936;border-left-width:4px}
+.item.locked{background:#171d27;border-color:#485161;opacity:.86}
+.item.is-equipped{outline:1px solid #5bba92;background:#1d302e}
+.item-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.status{font-size:12px;font-weight:700;padding:5px 8px;border-radius:6px}
+.status-locked{background:#343a46;color:#e1e5ec}.status-owned{background:#244b3a;color:#b4f5cf}.status-equipped{background:#22634d;color:#e1ffe9}
+.item-title{font-size:16px;margin-top:9px}.item-description{font-size:13px;line-height:1.55;color:#e2e7ee}
+.item-foot{border-top:1px solid #414956;padding-top:10px}.filter-grid{margin-top:12px}.search-label{margin:8px 0 14px}
+@media(max-width:400px){.item-head{align-items:flex-start}.rarity-badge{font-size:11px}.item-foot{font-size:11px}}
