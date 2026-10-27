@@ -104,3 +104,15 @@ Le menu apparaît aussi pour les joueurs existants qui n'ont jamais confirmé le
 
 
 V28 Mana Freak : code CPB-M-TEST2026D, 4 récompenses (nom uncommon/rare/mythic/legendary, mana garanti, 2 aléatoires).
+
+V29 : bouton Appliquer URL ne supprime plus une image locale ; dégradé bicolore horizontal ; Mana Freak reste un type de booster et non une rareté ; noms courts pour les capacités longues, texte complet conservé sur la carte ; suppression du symbole décoratif sur image personnelle.
+
+
+## V30
+- Shapeshifter retiré du catalogue des types peu communs ; reste le type de départ facultatif.
+- Cinq récompenses légendaires : capacité réduction {3} (0 PP), +10/+0 et +0/+10 (5 PP), réduction générique {2} (2 PP), Changeling gratuit.
+- Thème sombre explicite et symboles de mana plus grands sur mobile.
+- Révélation légendaire : secousse visuelle et vibration si prise en charge par le navigateur et le téléphone.
+
+
+V31 — Code de test CPB-T-LEGEND2026 : booster légendaire à 4 récompenses, quatrième récompense légendaire garantie. Une utilisation par appareil.

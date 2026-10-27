@@ -182,3 +182,25 @@ body.reveal-open{overflow:hidden}
 .reveal-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:16px auto 8px;width:min(100%,440px)}
 .reveal-actions[hidden]{display:none!important}
 .reveal-actions button{flex:1 1 175px;min-height:48px;font-weight:700}
+
+/* V29: séparation gauche/droite des deux couleurs */
+.mtg-card[data-color="DUAL"]{background:linear-gradient(to right,var(--primary-color) 0%,var(--primary-color) 47%,var(--secondary-color) 53%,var(--secondary-color) 100%)}
+/* L’illustration personnelle ne doit pas être masquée par le symbole décoratif */
+.art.has-personal-image .art-symbol,.art.has-personal-image small{display:none}
+
+/* V30 : thème sombre mobile, mana plus lisible et célébration légendaire */
+:root{color-scheme:dark}
+html,body{background-color:#10131b;color:#f4ebd9}
+input,select,textarea{color-scheme:dark;background:#242b36!important;color:#fff!important}
+@media(max-width:600px){
+ #mana{gap:4px;max-width:58%}
+ #mana .mana-badge{width:clamp(24px,6.8vw,31px);height:clamp(24px,6.8vw,31px)}
+ #mana .mana-badge b{font-size:clamp(13px,3.7vw,18px)}
+ .namebar{gap:4px;padding:5px 6px}
+ .namebar strong{min-width:0;font-size:clamp(12px,3.5vw,18px)}
+}
+@keyframes legendaryFrenzy{0%,100%{transform:translate(0,0)}10%,30%,50%,70%,90%{transform:translate(-6px,3px)}20%,40%,60%,80%{transform:translate(6px,-3px)}}
+@keyframes legendaryFlash{0%,100%{opacity:0}15%,40%,70%{opacity:.7}25%,55%,85%{opacity:.12}}
+body.legendary-frenzy .booster-reveal .reveal-content{animation:legendaryFrenzy .5s linear 4}
+body.legendary-frenzy .booster-reveal::before{content:'✦ LÉGENDAIRE ! ✦';position:fixed;inset:0;z-index:10;pointer-events:none;display:grid;place-items:center;font-weight:1000;font-size:clamp(30px,9vw,64px);letter-spacing:2px;text-align:center;color:#fff2a8;text-shadow:0 0 12px #a43aff,0 0 40px #ffcf4c;background:#7525b777;animation:legendaryFlash 1.8s ease-out both}
+@media(prefers-reduced-motion:reduce){body.legendary-frenzy .booster-reveal .reveal-content,body.legendary-frenzy .booster-reveal::before{animation:none!important}body.legendary-frenzy .booster-reveal::before{display:none}}
