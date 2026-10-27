@@ -203,11 +203,11 @@ Object.entries(C).forEach(([code,label])=>add('phyrex'+code,`Mana phyrexian ${la
 add('manaEnergy','Énergie {E} (ressource)','mana',5,'mythic',{symbol:'E',manaUnits:0,energy:true,note:'{E} est une ressource, pas du mana : débloque un marqueur d’énergie pour des capacités compatibles (règle maison).'});
 
 // Récompenses légendaires : une par catégorie (stats : deux variantes au choix).
-add('legendAbilityDiscount3','Incantation légendaire','ability',0,'legendary',{text:'This spell costs {3} less to cast.',source:'CommanderPower'});
-add('legendStatPower10','Puissance +10','stat',5,'legendary',{p:10,t:0});
-add('legendStatToughness10','Endurance +10','stat',5,'legendary',{p:0,t:10});
-add('legendManaReduce2','Réduction de mana {2}','mana',2,'legendary',{symbol:null,manaUnits:2,discountOnly:true,note:'Réduit le coût générique de {2} sans ajouter de symbole coloré.'});
-add('legendTypeChangeling','Tous les types de créature','type',0,'legendary',{type:null,changeling:true,note:'Changeling — This card is every creature type.'});
+add('legendAbilityDiscount3','Réduction de lancement {3}','ability',0,'legendary',{text:'This spell costs {3} less to cast.',source:'CommanderPower'});
+add('legendStatPower10','Force +10/+0','stat',5,'legendary',{p:10,t:0});
+add('legendStatToughness10','Endurance +0/+10','stat',5,'legendary',{p:0,t:10});
+add('legendManaReduce2','Réduction du coût {2}','mana',2,'legendary',{symbol:null,manaUnits:2,discountOnly:true,note:'Réduit le coût générique de {2} sans ajouter de symbole coloré.'});
+add('legendTypeChangeling','Changeling — Tous les types','type',0,'legendary',{type:null,changeling:true,note:'Changeling — This card is every creature type.'});
 const creatureTypes={common:['Brushwagg','Atog','Homarid','Kavu','Noggle','Sable','Monger','Flagbearer','Licid','Dauthi','Cephalid','Ouphe','Phelddagrif'],uncommon:['Clown','Plant','Insect','Snake','Bird','Cat','Frog','Rat','Minotaur','Horror'],rare:['Knight','Soldier','Warrior','Cleric','Rogue','Spirit','Zombie','Goblin','Merfolk','Elf'],mythic:['Dragon','Wizard','Vampire','Angel','Demon','Human','Sliver','Elemental','Artificer']};
 Object.entries(creatureTypes).forEach(([rarity,names])=>names.forEach(n=>add('type'+n,n,'type',0,rarity,{type:n})));
 ['Brave','Dark','Mad','Lost','Eternal','Forgotten','Bloodthirsty','Crimson','Nameless','Worldbreaker','Godslayer','Unforgiven'].forEach((n,i)=>add('word'+n,n,'name',0,i<4?'common':i<7?'uncommon':'rare',{word:n}));
@@ -352,7 +352,8 @@ function manaBadge(token){
 function manaCostVisual(){
  const tokens=[];
  if(s.hasX)tokens.push('X');
- const base=generic();
+ const reduction=equipped().filter(r=>r.id==='legendManaReduce2').length*2;
+ const base=Math.max(0,generic()-reduction);
  if(base>0)tokens.push(String(base));
  for(const r of equipped().filter(r=>r.kind==='mana'&&!r.energy&&r.symbol))tokens.push(r.symbol);
  return tokens.map(manaBadge).join('');
@@ -376,6 +377,7 @@ function card(){
  $('art').style.backgroundImage=s.image?`url("${s.image.replace(/["\\]/g,'')}")`:(art?art.gradient:'radial-gradient(circle at 50% 35%,#f3c178 0%,#aa4b5e 28%,#392b65 60%,#0d1931 100%)');
  $('art').querySelector('small').textContent=name().toUpperCase();
  $('art').classList.toggle('has-personal-image',!!s.image);
+ $('art').classList.toggle('centered-personal-art',!!s.image);
  $('homePP').textContent=`${points()} / ${budget()} PP • ${equipped().filter(r=>r.kind==='ability').length}/3 capacités`;
 }
 
@@ -544,7 +546,7 @@ function animateBooster(type,drops){
  const overlay=$('boosterReveal'),titles={standard:'Standard',premium:'Premium',legendary:'Légendaire',manafreak:'Mana Freak'};
  overlay.className='booster-reveal open tier-'+type;overlay.setAttribute('aria-hidden','false');
  document.body.classList.add('reveal-open');
- overlay.innerHTML=`<div class="reveal-content" role="dialog" aria-modal="true" aria-label="Ouverture du booster ${titles[type]}"><div class="reveal-heading">COMMANDERPOWER <span>· ${titles[type]}</span></div><div class="pack-stage"><div class="pack-glow"></div><div class="booster-pack"><span class="pack-symbol">✦</span><strong>COMMANDER<br>POWER</strong><small>${titles[type].toUpperCase()}</small></div></div><p class="reveal-prompt" aria-live="polite">Touche la première carte pour la révéler !</p><div class="reveal-cards">${drops.map((r,i)=>`<button type="button" class="reveal-card rarity-border-${r.rarity}" data-reveal="${i}" aria-label="Révéler la carte ${i+1}"><span class="reveal-back">✦<small>CARTE ${i+1} · TOUCHER</small></span><span class="reveal-front"><span class="reveal-index">${i+1} / 4</span><span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>${kindNames[r.kind]||r.kind} · ${r.cost} PP</small></span><span class="rarity-sparkles" aria-hidden="true">✦ ✧ ✦</span></button>`).join('')}</div><div class="reveal-actions" id="revealActions" hidden><button type="button" class="primary" id="anotherBooster">➕ Entrer un autre code</button><button type="button" id="finishReveal">🎒 Voir ma collection</button></div><button type="button" class="reveal-skip" id="skipReveal">Tout révéler »</button></div>`;
+ overlay.innerHTML=`<div class="reveal-content" role="dialog" aria-modal="true" aria-label="Ouverture du booster ${titles[type]}"><div class="reveal-heading">HEROES AGAINST THE END <span>· ${titles[type]}</span></div><div class="pack-stage"><div class="pack-glow"></div><div class="booster-pack"><span class="pack-symbol">✦</span><strong>HEROES<br>AGAINST THE END</strong><small>${titles[type].toUpperCase()}</small></div></div><p class="reveal-prompt" aria-live="polite">Touche la première carte pour la révéler !</p><div class="reveal-cards">${drops.map((r,i)=>`<button type="button" class="reveal-card rarity-border-${r.rarity}" data-reveal="${i}" aria-label="Révéler la carte ${i+1}"><span class="reveal-back">✦<small>CARTE ${i+1} · TOUCHER</small></span><span class="reveal-front"><span class="reveal-index">${i+1} / 4</span><span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>${kindNames[r.kind]||r.kind} · ${r.cost} PP</small></span><span class="rarity-sparkles" aria-hidden="true">✦ ✧ ✦</span></button>`).join('')}</div><div class="reveal-actions" id="revealActions" hidden><button type="button" class="primary" id="anotherBooster">➕ Entrer un autre code</button><button type="button" id="finishReveal">🎒 Voir ma collection</button></div><button type="button" class="reveal-skip" id="skipReveal">Tout révéler »</button></div>`;
  const cards=[...overlay.querySelectorAll('.reveal-card')],pack=overlay.querySelector('.booster-pack');
  const prompt=overlay.querySelector('.reveal-prompt'),finish=$('finishReveal'),another=$('anotherBooster'),actions=$('revealActions'),skip=$('skipReveal');
  let index=0;
@@ -623,7 +625,7 @@ $('redeemBtn').onclick=() => openBooster($('codeInput').value);$('codeInput').ad
 async function startCamera(){if(!('BarcodeDetector' in window)){toast('Scanner non disponible ici : saisissez le code du QR manuellement');return}try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});$('camera').srcObject=stream;$('camera').hidden=false;let detector=new BarcodeDetector({formats:['qr_code']});scanTimer=setInterval(async()=>{if(!stream)return;try{let codes=await detector.detect($('camera'));if(codes.length){let raw=codes[0].rawValue;let code=raw.startsWith('CEBOOST:')?raw.slice(8):raw;stopCamera();$('codeInput').value=code;toast('QR détecté : confirmez pour ouvrir le booster')}}catch{}},450)}catch{toast('Caméra indisponible : utilisez le champ de code')}}
 function stopCamera(){clearInterval(scanTimer);scanTimer=null;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('camera').hidden=true;$('camera').srcObject=null}$('startCamera').onclick=startCamera;$('stopCamera').onclick=stopCamera;
 function zoom(open){$('zoom').classList.toggle('open',open);$('zoom').setAttribute('aria-hidden',String(!open));if(open){let c=$('card').cloneNode(true);c.id='zoomCard';$('zoomMount').replaceChildren(c)}else $('zoomMount').replaceChildren()}$('card').onclick=()=>zoom(true);$('card').onkeydown=e=>{if(e.key==='Enter')zoom(true)};$('zoomClose').onclick=()=>zoom(false);$('zoom').onclick=e=>{if(e.target===$('zoom'))zoom(false)};
-$('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify({version:2,state:s},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='commanderpower-sauvegarde.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500)};
+$('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify({version:2,state:s},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='heroes-against-the-end-sauvegarde.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500)};
 $('importInput').onchange=async e=>{let f=e.target.files?.[0];if(!f)return;try{let data=JSON.parse(await f.text()),v=data.state||data;if(!v.owned||!Array.isArray(v.equipped)||!Array.isArray(v.words)||!Array.isArray(v.usedCodes))throw Error('Format invalide');s={...structuredClone(base),...v};s.equipped=s.equipped.filter(id=>!!get(id));render();showColorCreation();toast('Sauvegarde importée')}catch{toast('Fichier de sauvegarde invalide')}};
 $('resetBtn').onclick=()=>{if(confirm('Supprimer toutes les récompenses et les codes utilisés sur cet appareil ?')){s=structuredClone(base);render();go('home');showColorCreation();toast('Progression réinitialisée')}};
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));render();

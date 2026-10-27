@@ -1,12 +1,12 @@
 {
-  "name": "CommanderPower",
-  "short_name": "CommanderPower",
-  "description": "Crée ton commandant et collectionne des améliorations",
+  "name": "Heroes Against The End",
+  "short_name": "Heroes End",
+  "description": "Crée ton héros, ouvre des boosters et collectionne des pouvoirs.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#10131b",
-  "theme_color": "#10131b",
+  "background_color": "#100e16",
+  "theme_color": "#211828",
   "icons": [
     {
       "src": "icon-192.png",

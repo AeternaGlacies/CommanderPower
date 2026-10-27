@@ -204,3 +204,17 @@ input,select,textarea{color-scheme:dark;background:#242b36!important;color:#fff!
 body.legendary-frenzy .booster-reveal .reveal-content{animation:legendaryFrenzy .5s linear 4}
 body.legendary-frenzy .booster-reveal::before{content:'✦ LÉGENDAIRE ! ✦';position:fixed;inset:0;z-index:10;pointer-events:none;display:grid;place-items:center;font-weight:1000;font-size:clamp(30px,9vw,64px);letter-spacing:2px;text-align:center;color:#fff2a8;text-shadow:0 0 12px #a43aff,0 0 40px #ffcf4c;background:#7525b777;animation:legendaryFlash 1.8s ease-out both}
 @media(prefers-reduced-motion:reduce){body.legendary-frenzy .booster-reveal .reveal-content,body.legendary-frenzy .booster-reveal::before{animation:none!important}body.legendary-frenzy .booster-reveal::before{display:none}}
+
+/* V32 : image personnelle entière, centrée dans la fenêtre de l'illustration. */
+.art.centered-personal-art{background-color:#171923;background-size:contain!important;background-repeat:no-repeat!important;background-position:50% 50%!important}
+
+/* V33 — Identité Heroes Against The End */
+:root{color-scheme:dark;background:#100e16}
+body{background:radial-gradient(ellipse at 48% 9%,#3b2b32 0,#1b1c2b 43%,#0d1016 100%)}
+header{min-height:72px;height:auto;gap:12px;padding-top:7px;padding-bottom:7px}
+.brand{display:flex;align-items:center;gap:10px;font-size:clamp(12px,3.3vw,16px);letter-spacing:.65px;line-height:1.2;color:#f5d68a;font-weight:850}
+.brand b{color:#fff1c3}.brand-icon{width:49px;height:49px;object-fit:cover;border-radius:12px;border:1px solid #d5a85a;box-shadow:0 0 12px #d3a35455;flex-shrink:0}
+.drawer-brand{display:flex;align-items:center;gap:12px;clear:both;padding-top:20px}.drawer-brand img{width:56px;height:56px;border-radius:13px;border:1px solid #cba45d}.drawer-brand h2{padding:0;font-size:19px}
+.primary{background:linear-gradient(#f7dc98,#b78239);border-color:#ffde9b}.tabs button.selected{background:#dfb66a}.iconbtn{border-color:#d6a85c}
+.reveal-heading{color:#f9d99c}.booster-pack strong{font-size:11px;letter-spacing:.65px}.pack-symbol{color:#f5d48a}
+@media(max-width:380px){.brand-icon{width:42px;height:42px}.brand{font-size:12px}}
