@@ -218,3 +218,28 @@ header{min-height:72px;height:auto;gap:12px;padding-top:7px;padding-bottom:7px}
 .primary{background:linear-gradient(#f7dc98,#b78239);border-color:#ffde9b}.tabs button.selected{background:#dfb66a}.iconbtn{border-color:#d6a85c}
 .reveal-heading{color:#f9d99c}.booster-pack strong{font-size:11px;letter-spacing:.65px}.pack-symbol{color:#f5d48a}
 @media(max-width:380px){.brand-icon{width:42px;height:42px}.brand{font-size:12px}}
+
+/* V34 — nuit étoilée et identité Heroes Against The End */
+html{background:#050713}
+body{isolation:isolate;background:radial-gradient(ellipse at 50% -10%,#292348 0%,#101327 38%,#060814 76%,#03040b 100%);background-attachment:fixed;min-height:100dvh}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.78;background-image:radial-gradient(1.2px 1.2px at 8% 12%,#f8edcf 97%,transparent),radial-gradient(1px 1px at 22% 64%,#c9d9ff 97%,transparent),radial-gradient(1.5px 1.5px at 43% 24%,#f9e3ac 97%,transparent),radial-gradient(1px 1px at 65% 75%,#ffffff 97%,transparent),radial-gradient(1.3px 1.3px at 85% 39%,#a8c5ff 97%,transparent),radial-gradient(1px 1px at 95% 88%,#ffffff 97%,transparent),radial-gradient(1px 1px at 14% 90%,#d9c6f9 97%,transparent);background-size:239px 247px,311px 291px,373px 337px,419px 389px,487px 461px,563px 521px,607px 577px}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 75% 30%,#493a7520,transparent 45%),radial-gradient(ellipse at 15% 75%,#15345825,transparent 52%)}
+.art.centered-personal-art.cropped-personal-art{background-size:cover!important;background-position:50% 50%!important}
+@media(min-width:900px){
+ header{max-width:1200px;height:88px;padding:10px 30px;border-bottom:1px solid #c59c4b3d}
+ .brand{font-size:20px;letter-spacing:1px}.brand-icon{width:60px;height:60px}
+ main{max-width:1200px;padding:24px 34px 60px}
+ #home.active{min-height:calc(100dvh - 135px);justify-content:flex-start;padding-top:12px}
+ #home .mtg-card{width:440px;max-width:100%}
+ #edit.active,#collection.active,#scan.active,#settings.active{max-width:1040px;margin:0 auto}
+ #edit .tabs,#collection .tabs{gap:10px;flex-wrap:wrap;overflow:visible}
+ #edit .tabs button,#collection .tabs button{padding:13px 17px;font-size:15px}
+ #editor,#collectionList{max-width:1000px}
+ #editResults,#collectionList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #editResults .result-count,#collectionList .result-count,#editResults .empty-state,#collectionList .empty-state{grid-column:1/-1}
+ .item{margin:0;min-width:0}
+ #scan,#settings{max-width:700px!important}
+ #drawer{width:380px;padding:28px}
+ #zoomMount .mtg-card{width:min(480px,100%)}
+}
+@media(min-width:1300px){#editResults,#collectionList{grid-template-columns:repeat(3,minmax(0,1fr))}}
