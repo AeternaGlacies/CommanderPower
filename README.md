@@ -101,3 +101,6 @@ V22 : Affichage des mots sans identifiants techniques wordExtra dans les menus; 
 
 ## V26 : correctif du choix de couleur
 Le menu apparaît aussi pour les joueurs existants qui n'ont jamais confirmé leur couleur. Il réapparaît après une réinitialisation et après import d'une sauvegarde sans choix.
+
+
+V28 Mana Freak : code CPB-M-TEST2026D, 4 récompenses (nom uncommon/rare/mythic/legendary, mana garanti, 2 aléatoires).

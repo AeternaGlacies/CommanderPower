@@ -177,3 +177,8 @@ body.reveal-open{overflow:hidden}
 .shapeshifter-toggle{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0;padding:12px;border:1px solid #9a8455;border-radius:12px;background:#252c3a;color:#f4e6c4}
 .shapeshifter-toggle input{width:auto;accent-color:#d8b568}
 .shapeshifter-toggle small{display:block;width:100%;color:#b9c0cc;margin-left:25px}
+
+/* V27 : enchaîner les codes sans repasser par le menu */
+.reveal-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:16px auto 8px;width:min(100%,440px)}
+.reveal-actions[hidden]{display:none!important}
+.reveal-actions button{flex:1 1 175px;min-height:48px;font-weight:700}

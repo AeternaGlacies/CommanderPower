@@ -374,7 +374,7 @@ if(tab==='name'){let options=(i)=>'<option value="">— Vide —</option>'+Objec
 if(tab==='mana')e.innerHTML=`<p class="sectionhelp">${explanations.mana}</p><div class="fixed-color"><strong>Couleur d'origine permanente</strong><span class="color-dot" style="--dot:${cardPalette[s.baseColor]}"></span><span>${C[s.baseColor]}</span><small>La deuxième couleur vient du mana équipé. Trois couleurs ou plus donnent un fond doré.</small></div><label>Modification du mana<select id="manaMode"><option value="none" ${s.mode==='none'?'selected':''}>Aucune</option><option value="reduce" ${s.mode==='reduce'?'selected':''}>Réduction (3 PP par mana)</option><option value="increase" ${s.mode==='increase'?'selected':''}>Augmentation (+2 PP par mana)</option></select></label><label>Quantité (0 à 3)<input id="manaDelta" type="number" min="0" max="3" value="${s.delta}"></label><label class="row"><input id="hasX" type="checkbox" style="width:auto" ${s.hasX?'checked':''}> Activer {X}</label><p class="pill">Coût actuel : ${html(mana())}</p>${filterControls('edit')}<div id="editResults">${listEditor('mana')}</div>`;
 if(tab==='art')e.innerHTML=`<p class="sectionhelp">${explanations.art}</p><label>📷 Choisir une image sur mon téléphone<input id="imageFile" type="file" accept="image/*"></label><button id="removeImage" type="button">Retirer mon image</button><label>Image en ligne (HTTPS)<input id="imageURL" type="url" value="${html(s.image.startsWith('https://')?s.image:'')}" placeholder="https://..."></label><button id="setImage" class="primary">Appliquer</button>`;
 }
-const rarityNames={common:'Commune',uncommon:'Peu commune',rare:'Rare',mythic:'Mythique',legendary:'Légendaire'};
+const rarityNames={common:'Commune',uncommon:'Peu commune',rare:'Rare',mythic:'Mythique',legendary:'Légendaire',manafreak:'Mana Freak'};
 function rarityBadge(r){return `<span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span>`}
 function collection(){if($('collectionFilters')&&!$('collectionFilters').children.length)$('collectionFilters').innerHTML=filterControls('collection');let list=sortRewards(rewards.filter(r=>r.kind!=='art'&&(filter==='all'||r.kind===filter)&&matchesFilters(r,'collection')));$('collectionList').innerHTML=`<p class="result-count">${list.length} résultat(s)</p>`+(list.map(r=>item(r,false)).join('')||'<p class="empty-state">Aucune récompense ne correspond à ces filtres.</p>');let total=Object.values(s.owned).reduce((a,b)=>a+b,0);$('collectionSummary').textContent=`${total} récompenses et mots possédés • ${s.usedCodes.length} booster(s) ouverts`}
 function changeWord(i,v){let proposed=[...s.words];proposed[i]=v;let used=proposed.filter(w=>w===v).length;if(v&&used>own(v)){toast('Tu ne possèdes pas assez de ce mot');editor();return}s.words=proposed;render()}
@@ -384,9 +384,10 @@ function updateMana(){let mode=$('manaMode').value,delta=Math.max(0,Math.min(3,N
 const boosterOdds={
  standard:[['common',55],['uncommon',28],['rare',12],['mythic',4],['legendary',1]],
  premium:[['common',25],['uncommon',40],['rare',25],['mythic',9],['legendary',1]],
- legendary:[['common',10],['uncommon',30],['rare',35],['mythic',20],['legendary',5]]
+ legendary:[['common',10],['uncommon',30],['rare',35],['mythic',20],['legendary',5]],
+ manafreak:[['common',10],['uncommon',30],['rare',35],['mythic',20],['legendary',5]]
 };
-function boosterType(code){const match=/^CPB-([SPL])-[A-Z0-9_-]{6,}$/i.exec(code);return match?({S:'standard',P:'premium',L:'legendary'}[match[1].toUpperCase()]):'standard'}
+function boosterType(code){const match=/^CPB-([SPLM])-[A-Z0-9_-]{6,}$/i.exec(code);return match?({S:'standard',P:'premium',L:'legendary',M:'manafreak'}[match[1].toUpperCase()]):'standard'}
 // Quatre emplacements : nom, type/stat, récompense variée limitée par rareté, puis surprise libre.
 const boosterSlots={
  standard:[
@@ -405,6 +406,12 @@ const boosterSlots={
   {kinds:['name'],rarities:['uncommon','rare','mythic','legendary']},
   {kinds:['type','stat'],rarities:['uncommon','rare','mythic']},
   {kinds:null,rarities:['rare','mythic']},
+  {kinds:null,rarities:null}
+ ],
+ manafreak:[
+  {kinds:['name'],rarities:['uncommon','rare','mythic','legendary']},
+  {kinds:['mana'],rarities:null},
+  {kinds:null,rarities:null},
   {kinds:null,rarities:null}
  ]
 };
@@ -506,12 +513,12 @@ function revealSound(rarity){
 }
 function animateBooster(type,drops){
  closeBoosterReveal();
- const overlay=$('boosterReveal'),titles={standard:'Standard',premium:'Premium',legendary:'Légendaire'};
+ const overlay=$('boosterReveal'),titles={standard:'Standard',premium:'Premium',legendary:'Légendaire',manafreak:'Mana Freak'};
  overlay.className='booster-reveal open tier-'+type;overlay.setAttribute('aria-hidden','false');
  document.body.classList.add('reveal-open');
- overlay.innerHTML=`<div class="reveal-content" role="dialog" aria-modal="true" aria-label="Ouverture du booster ${titles[type]}"><div class="reveal-heading">COMMANDERPOWER <span>· ${titles[type]}</span></div><div class="pack-stage"><div class="pack-glow"></div><div class="booster-pack"><span class="pack-symbol">✦</span><strong>COMMANDER<br>POWER</strong><small>${titles[type].toUpperCase()}</small></div></div><p class="reveal-prompt" aria-live="polite">Touche la première carte pour la révéler !</p><div class="reveal-cards">${drops.map((r,i)=>`<button type="button" class="reveal-card rarity-border-${r.rarity}" data-reveal="${i}" aria-label="Révéler la carte ${i+1}"><span class="reveal-back">✦<small>CARTE ${i+1} · TOUCHER</small></span><span class="reveal-front"><span class="reveal-index">${i+1} / 4</span><span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>${kindNames[r.kind]||r.kind} · ${r.cost} PP</small></span><span class="rarity-sparkles" aria-hidden="true">✦ ✧ ✦</span></button>`).join('')}</div><button type="button" class="primary reveal-finish" id="finishReveal" hidden>Voir ma collection</button><button type="button" class="reveal-skip" id="skipReveal">Tout révéler »</button></div>`;
+ overlay.innerHTML=`<div class="reveal-content" role="dialog" aria-modal="true" aria-label="Ouverture du booster ${titles[type]}"><div class="reveal-heading">COMMANDERPOWER <span>· ${titles[type]}</span></div><div class="pack-stage"><div class="pack-glow"></div><div class="booster-pack"><span class="pack-symbol">✦</span><strong>COMMANDER<br>POWER</strong><small>${titles[type].toUpperCase()}</small></div></div><p class="reveal-prompt" aria-live="polite">Touche la première carte pour la révéler !</p><div class="reveal-cards">${drops.map((r,i)=>`<button type="button" class="reveal-card rarity-border-${r.rarity}" data-reveal="${i}" aria-label="Révéler la carte ${i+1}"><span class="reveal-back">✦<small>CARTE ${i+1} · TOUCHER</small></span><span class="reveal-front"><span class="reveal-index">${i+1} / 4</span><span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>${kindNames[r.kind]||r.kind} · ${r.cost} PP</small></span><span class="rarity-sparkles" aria-hidden="true">✦ ✧ ✦</span></button>`).join('')}</div><div class="reveal-actions" id="revealActions" hidden><button type="button" class="primary" id="anotherBooster">➕ Entrer un autre code</button><button type="button" id="finishReveal">🎒 Voir ma collection</button></div><button type="button" class="reveal-skip" id="skipReveal">Tout révéler »</button></div>`;
  const cards=[...overlay.querySelectorAll('.reveal-card')],pack=overlay.querySelector('.booster-pack');
- const prompt=overlay.querySelector('.reveal-prompt'),finish=$('finishReveal'),skip=$('skipReveal');
+ const prompt=overlay.querySelector('.reveal-prompt'),finish=$('finishReveal'),another=$('anotherBooster'),actions=$('revealActions'),skip=$('skipReveal');
  let index=0;
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  function reveal(i,silent=false){
@@ -523,7 +530,7 @@ function animateBooster(type,drops){
   index++;
   if(index===cards.length){
    prompt.textContent='Tes 4 récompenses sont dans ta collection !';
-   finish.hidden=false;skip.hidden=true;finish.focus();
+   actions.hidden=false;skip.hidden=true;another.focus();
   }else{
    prompt.textContent=`Carte ${index} révélée. Touche la suivante !`;
    cards[index].classList.add('next');
@@ -532,6 +539,7 @@ function animateBooster(type,drops){
  cards.forEach((card,i)=>card.onclick=()=>reveal(i));
  skip.onclick=()=>{while(index<cards.length)reveal(index,true)};
  finish.onclick=()=>{closeBoosterReveal();go('collection')};
+ another.onclick=()=>{closeBoosterReveal();go('scan');$('codeInput').focus()};
  pack.classList.add('burst');overlay.classList.add('show-cards');
  boosterOpenSound();
  cards[0].classList.add('next');
@@ -552,7 +560,7 @@ function openBooster(code){
  }
  for(const r of drops)s.owned[r.id]=own(r.id)+1;
  s.usedCodes.push(code);
- const titles={standard:'Standard',premium:'Premium',legendary:'Légendaire'};
+ const titles={standard:'Standard',premium:'Premium',legendary:'Légendaire',manafreak:'Mana Freak'};
  $('boosterResults').innerHTML=`<h2>🎉 Booster ${titles[type]} ouvert !</h2>${drops.map((r,i)=>`<div class="reward"><span class="rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>Récompense ${i+1}/4 · ${r.cost} PP · ${html(r.kind)}</small></div>`).join('')}`;
  $('codeInput').value='';
  $('scanStatus').textContent='4 récompenses ajoutées à ta collection.';
