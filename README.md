@@ -1,7 +1,23 @@
-# CommanderPower V12 — Capacités rares et mythiques
+# CommanderPower V14 — Boosters à 4 emplacements
 
-Ajout de 12 capacités rares et 24 capacités mythiques maison, inspirées de mécaniques de cartes Magic. Les coûts PP sont des propositions propres à CommanderPower, **pas** des coûts officiels Unfinity. Les doublons textuels sont regroupés par le système existant. Aucune nouvelle capacité ne recherche de cartes dans la bibliothèque.
+Les trois codes QR de test V13 sont conservés et fonctionnent avec V14.
 
-Les raretés contrôlent les probabilités des boosters et ne correspondent pas directement aux PP. Les capacités mythiques ajoutées ne comportent aucun coût {T}.
+Chaque booster donne exactement **4 récompenses** :
 
-Installation : remplacer les fichiers du dépôt GitHub Pages. Les sauvegardes locales existantes restent sur la même clé. Les règles proposées demandent des tests d’équilibrage en Commander multijoueur.
+- **Standard** : 1 nom commune/peu commune ; 1 type ou stat commune/peu commune ; 1 type ou stat commune/peu commune ; 1 récompense aléatoire (toutes catégories et raretés).
+- **Premium** : 1 nom commune/peu commune/rare ; 1 type ou stat commune/peu commune/rare ; 1 type ou stat peu commune/rare ; 1 récompense aléatoire.
+- **Légendaire** : 1 nom peu commune/rare/mythique/légendaire ; 1 type ou stat peu commune/rare/mythique ; 1 type ou stat rare/mythique ; 1 récompense aléatoire.
+
+Les probabilités déjà définies pour chaque type de booster servent au tirage *parmi les raretés autorisées* pour chaque emplacement.
+
+Les doublons de récompenses entre emplacements restent possibles, sauf la récompense de nom légendaire unique.
+Les codes ne sont bloqués qu'au niveau du stockage local de l'appareil.
+La sauvegarde existante est conservée.
+
+## V15 — Animation d'ouverture
+- Animation de paquet distincte selon Standard, Premium et Légendaire.
+- Révélation progressive des 4 récompenses avec leurs raretés.
+- Bouton « Tout révéler » et bouton « Voir ma collection ».
+- Respect de l'option système « réduire les animations ».
+- Les récompenses et le QR utilisé sont sauvegardés **avant** l'animation.
+- Aucun changement aux probabilités et aux codes QR de test V13.

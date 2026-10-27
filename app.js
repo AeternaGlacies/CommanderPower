@@ -306,7 +306,103 @@ function rarityBadge(r){return `<span class="rarity-badge rarity-${r.rarity}">${
 function collection(){if($('collectionFilters')&&!$('collectionFilters').children.length)$('collectionFilters').innerHTML=filterControls('collection');let list=sortRewards(rewards.filter(r=>r.kind!=='art'&&(filter==='all'||r.kind===filter)&&matchesFilters(r,'collection')));$('collectionList').innerHTML=`<p class="result-count">${list.length} résultat(s)</p>`+(list.map(r=>item(r,false)).join('')||'<p class="empty-state">Aucune récompense ne correspond à ces filtres.</p>');let total=Object.values(s.owned).reduce((a,b)=>a+b,0);$('collectionSummary').textContent=`${total} récompenses et mots possédés • ${s.usedCodes.length} booster(s) ouverts`}
 function changeWord(i,v){let proposed=[...s.words];proposed[i]=v;let used=proposed.filter(w=>w===v).length;if(v&&used>own(v)){toast('Tu ne possèdes pas assez de ce mot');editor();return}s.words=proposed;render()}
 function updateMana(){let mode=$('manaMode').value,delta=Math.max(0,Math.min(3,Number($('manaDelta').value)||0)),x=$('hasX').checked,col=$('baseColor').value;let prev={mode:s.mode,delta:s.delta,hasX:s.hasX,baseColor:s.baseColor};Object.assign(s,{mode,delta,hasX:x,baseColor:col});if(points()>budget()||generic()<0){Object.assign(s,prev);toast('Configuration invalide : budget ou coût de mana');editor();return}render()}
-function openBooster(code){code=code.trim().toUpperCase();if(!/^[A-Z0-9][A-Z0-9_-]{5,79}$/.test(code)){toast('Code invalide : 6 à 80 caractères (A-Z, 0-9, _ ou -)');return}if(s.usedCodes.includes(code)){toast('Ce booster a déjà été ouvert sur cet appareil');return}let pool=rewards.filter(r=>!r.excludeFromBoosters&&r.kind!=='art'&&(r.id!=='legendword'||own('legendword')===0));let probs=[['common',55],['uncommon',28],['rare',12],['mythic',4],['legendary',1]];let drops=[];for(let i=0;i<3;i++){let roll=Math.random()*100,rar='common';for(let [r,p] of probs){roll-=p;if(roll<0){rar=r;break}}let options=pool.filter(r=>r.rarity===rar);if(!options.length)options=pool.filter(r=>r.rarity==='common');let r=options[Math.floor(Math.random()*options.length)];drops.push(r);s.owned[r.id]=own(r.id)+1;if(r.id==='legendword')pool=pool.filter(x=>x.id!=='legendword')};s.usedCodes.push(code);$('boosterResults').innerHTML=`<h2>🎉 Booster ouvert !</h2>${drops.map(r=>`<div class="reward"><span class="rarity-${r.rarity}">${r.rarity.toUpperCase()}</span><strong>${html(r.name)}</strong><small>${r.cost} PP • ${html(r.kind)}</small></div>`).join('')}`;$('codeInput').value='';$('scanStatus').textContent='3 récompenses ajoutées à ta collection.';render()}
+// Codes de test: CPB-S-..., CPB-P-..., CPB-L-... (identifiant unique local).
+// Les codes libres historiques continuent à fonctionner comme boosters Standard.
+const boosterOdds={
+ standard:[['common',55],['uncommon',28],['rare',12],['mythic',4],['legendary',1]],
+ premium:[['common',25],['uncommon',40],['rare',25],['mythic',9],['legendary',1]],
+ legendary:[['common',10],['uncommon',30],['rare',35],['mythic',20],['legendary',5]]
+};
+function boosterType(code){const match=/^CPB-([SPL])-[A-Z0-9_-]{6,}$/i.exec(code);return match?({S:'standard',P:'premium',L:'legendary'}[match[1].toUpperCase()]):'standard'}
+// Quatre emplacements fixes : nom, type/stat, type/stat, puis récompense libre.
+const boosterSlots={
+ standard:[
+  {kinds:['name'],rarities:['common','uncommon']},
+  {kinds:['type','stat'],rarities:['common','uncommon']},
+  {kinds:['type','stat'],rarities:['common','uncommon']},
+  {kinds:null,rarities:null}
+ ],
+ premium:[
+  {kinds:['name'],rarities:['common','uncommon','rare']},
+  {kinds:['type','stat'],rarities:['common','uncommon','rare']},
+  {kinds:['type','stat'],rarities:['uncommon','rare']},
+  {kinds:null,rarities:null}
+ ],
+ legendary:[
+  {kinds:['name'],rarities:['uncommon','rare','mythic','legendary']},
+  {kinds:['type','stat'],rarities:['uncommon','rare','mythic']},
+  {kinds:['type','stat'],rarities:['rare','mythic']},
+  {kinds:null,rarities:null}
+ ]
+};
+function weightedReward(pool,probs){
+ if(!pool.length)return null;
+ const available=probs.filter(([rarity])=>pool.some(r=>r.rarity===rarity));
+ const sum=available.reduce((n,[,weight])=>n+weight,0);
+ let roll=Math.random()*sum,chosen=available[available.length-1][0];
+ for(const [rarity,weight] of available){roll-=weight;if(roll<0){chosen=rarity;break}}
+ const options=pool.filter(r=>r.rarity===chosen);
+ return options[Math.floor(Math.random()*options.length)];
+}
+let revealTimers=[];
+function closeBoosterReveal(){
+ revealTimers.forEach(clearTimeout);revealTimers=[];
+ const overlay=$('boosterReveal');
+ if(overlay){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');overlay.innerHTML='';}
+ document.body.classList.remove('reveal-open');
+}
+function animateBooster(type,drops){
+ closeBoosterReveal();
+ const overlay=$('boosterReveal');
+ const titles={standard:'Standard',premium:'Premium',legendary:'Légendaire'};
+ const symbols={standard:'✦',premium:'✧',legendary:'✶'};
+ overlay.className='booster-reveal open tier-'+type;
+ overlay.setAttribute('aria-hidden','false');
+ document.body.classList.add('reveal-open');
+ overlay.innerHTML=`<div class="reveal-content" role="dialog" aria-modal="true" aria-label="Ouverture du booster ${titles[type]}"><div class="reveal-heading">COMMANDERPOWER <span>· ${titles[type]}</span></div><div class="pack-stage"><div class="pack-glow"></div><div class="booster-pack"><span class="pack-symbol">${symbols[type]}</span><strong>COMMANDER<br>POWER</strong><small>${titles[type].toUpperCase()}</small></div></div><p class="reveal-prompt">Ouverture du booster…</p><div class="reveal-cards">${drops.map((r,i)=>`<article class="reveal-card rarity-border-${r.rarity}" style="--order:${i}"><span class="reveal-index">${i+1} / 4</span><span class="rarity-badge rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>${kindNames[r.kind]||r.kind} · ${r.cost} PP</small></article>`).join('')}</div><button type="button" class="primary reveal-finish" id="finishReveal" hidden>Voir ma collection</button><button type="button" class="reveal-skip" id="skipReveal">Tout révéler »</button></div>`;
+ const cards=[...overlay.querySelectorAll('.reveal-card')];
+ const pack=overlay.querySelector('.booster-pack');
+ const prompt=overlay.querySelector('.reveal-prompt');
+ const finish=$('finishReveal'),skip=$('skipReveal');
+ let done=false;
+ function revealAll(){
+  if(done)return;
+  done=true;revealTimers.forEach(clearTimeout);revealTimers=[];
+  pack.classList.add('burst');overlay.classList.add('show-cards');
+  cards.forEach(c=>c.classList.add('revealed'));
+  prompt.textContent='Tes 4 récompenses sont ajoutées à ta collection !';
+  finish.hidden=false;skip.hidden=true;finish.focus();
+ }
+ skip.onclick=revealAll;
+ finish.onclick=()=>{closeBoosterReveal();go('collection')};
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduced){revealAll();return}
+ revealTimers.push(setTimeout(()=>{pack.classList.add('burst');overlay.classList.add('show-cards');prompt.textContent='Découvre tes récompenses !'},1000));
+ cards.forEach((card,i)=>revealTimers.push(setTimeout(()=>{card.classList.add('revealed');if(i===3){done=true;finish.hidden=false;skip.hidden=true;prompt.textContent='Tes 4 récompenses sont ajoutées à ta collection !'}},1500+i*700)));
+}
+function openBooster(code){
+ code=code.trim().replace(/^CEBOOST:/i,'').toUpperCase();
+ if(!/^[A-Z0-9][A-Z0-9_-]{5,79}$/.test(code)){toast('Code invalide : 6 à 80 caractères (A-Z, 0-9, _ ou -)');return}
+ if(s.usedCodes.includes(code)){toast('Ce booster a déjà été ouvert sur cet appareil');return}
+ const type=boosterType(code),probs=boosterOdds[type],slots=boosterSlots[type];
+ const pool=rewards.filter(r=>!r.excludeFromBoosters&&r.kind!=='art'&&(r.id!=='legendword'||own('legendword')===0));
+ const drops=[];
+ for(const slot of slots){
+  const options=pool.filter(r=>(!slot.kinds||slot.kinds.includes(r.kind))&&(!slot.rarities||slot.rarities.includes(r.rarity))&&!(r.id==='legendword'&&drops.some(d=>d.id==='legendword')));
+  const reward=weightedReward(options,probs);
+  if(!reward){toast('Catalogue incomplet pour ce booster : aucune récompense pour un emplacement');return}
+  drops.push(reward);
+ }
+ for(const r of drops)s.owned[r.id]=own(r.id)+1;
+ s.usedCodes.push(code);
+ const titles={standard:'Standard',premium:'Premium',legendary:'Légendaire'};
+ $('boosterResults').innerHTML=`<h2>🎉 Booster ${titles[type]} ouvert !</h2>${drops.map((r,i)=>`<div class="reward"><span class="rarity-${r.rarity}">${rarityNames[r.rarity]||r.rarity}</span><strong>${html(r.name)}</strong><small>Récompense ${i+1}/4 · ${r.cost} PP · ${html(r.kind)}</small></div>`).join('')}`;
+ $('codeInput').value='';
+ $('scanStatus').textContent='4 récompenses ajoutées à ta collection.';
+ render(); // Sauvegarde avant l'animation : fermer l'écran ne perd rien.
+ animateBooster(type,drops);
+}
+
 function go(page){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));$('drawer').classList.remove('open');$('shade').classList.remove('open');if(page!=='scan')stopCamera();render();window.scrollTo(0,0)}
 $('menuBtn').onclick=()=>{$('drawer').classList.add('open');$('shade').classList.add('open')};$('closeBtn').onclick=$('shade').onclick=()=>{$('drawer').classList.remove('open');$('shade').classList.remove('open')};document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>go(b.dataset.page));$('editTabs').onclick=e=>{let b=e.target.closest('[data-tab]');if(!b)return;tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('selected',x===b));editor()};$('collectionTabs').onclick=e=>{let b=e.target.closest('[data-filter]');if(!b)return;filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('selected',x===b));collection()};
 function updateFilteredView(scope){if(scope==='edit'&&$('editResults')){$('editResults').innerHTML=listEditor(({abilities:'ability',stats:'stat',mana:'mana',name:'name',types:'type',art:'art'})[tab]);}else collection()}
