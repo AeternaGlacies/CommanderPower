@@ -41,3 +41,11 @@ Dans **Modifier > Image**, sélectionnez une image de votre téléphone. Elle es
 
 ## V4 — Capacités
 Catalogue élargi de capacités maison, avec recherche dans Modifier > Capacités, rareté et coût en PP. Les capacités verrouillées sont visibles et se débloquent via boosters. Aucune capacité de tutorisation non-terrain. Les 96 stickers officiels Unfinity ne sont **pas** encore reproduits ou vérifiés.
+
+
+## V5 — Filtres et raretés
+- Pastilles colorées pour les raretés : commune (gris), peu commune (bleu), rare (or), mythique (orange), légendaire (violet).
+- Filtres Possession et Rareté dans le catalogue des capacités et la collection.
+- Possession : toutes, possédées, non possédées, équipées.
+- Les filtres ne modifient pas les sauvegardes existantes.
+- Catalogue toujours basé sur des capacités maison provisoires, pas sur une extraction vérifiée des 96 stickers Unfinity.
