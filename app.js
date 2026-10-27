@@ -271,8 +271,8 @@ for(const r of rewards){if(r.kind!=='ability')continue;const t=(r.text||r.name).
 }
 const base={owned:{The:1,Prismatic:1,Piper:1},words:['The','Prismatic','Piper'],baseColor:'W',colorChosen:false,shapeshifter:true,mode:'none',delta:0,hasX:false,equipped:[],artId:'',usedCodes:[],customWord:'',image:'',bonus:0};
 function load(){try{let v=JSON.parse(localStorage.getItem(KEY));return v&&typeof v==='object'?{...structuredClone(base),...v}:structuredClone(base)}catch{return structuredClone(base)}}let s=load();
-// Anciennes sauvegardes : la couleur déjà choisie devient permanente.
-if(localStorage.getItem(KEY)!==null && s.colorChosen!==true)s.colorChosen=true;
+// Une sauvegarde antérieure sans choix confirmé doit afficher le menu de couleur.
+// Ne pas considérer automatiquement la couleur W historique comme un choix du joueur.
 // Conversion des anciennes sauvegardes vers les identifiants dédoublonnés.
 for(const [oldId,newId] of Object.entries(abilityAliases)){if(s.owned[oldId]){s.owned[newId]=(s.owned[newId]||0)+s.owned[oldId];delete s.owned[oldId]}s.equipped=s.equipped.map(id=>id===oldId?newId:id)}
 s.equipped=[...new Set(s.equipped.filter(id=>{const r=rewards.find(x=>x.id===id);return r?.kind==='ability'})) ,...s.equipped.filter(id=>{const r=rewards.find(x=>x.id===id);return r?.kind!=='ability'})];
@@ -588,16 +588,16 @@ async function startCamera(){if(!('BarcodeDetector' in window)){toast('Scanner n
 function stopCamera(){clearInterval(scanTimer);scanTimer=null;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;$('camera').hidden=true;$('camera').srcObject=null}$('startCamera').onclick=startCamera;$('stopCamera').onclick=stopCamera;
 function zoom(open){$('zoom').classList.toggle('open',open);$('zoom').setAttribute('aria-hidden',String(!open));if(open){let c=$('card').cloneNode(true);c.id='zoomCard';$('zoomMount').replaceChildren(c)}else $('zoomMount').replaceChildren()}$('card').onclick=()=>zoom(true);$('card').onkeydown=e=>{if(e.key==='Enter')zoom(true)};$('zoomClose').onclick=()=>zoom(false);$('zoom').onclick=e=>{if(e.target===$('zoom'))zoom(false)};
 $('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify({version:2,state:s},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='commanderpower-sauvegarde.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),500)};
-$('importInput').onchange=async e=>{let f=e.target.files?.[0];if(!f)return;try{let data=JSON.parse(await f.text()),v=data.state||data;if(!v.owned||!Array.isArray(v.equipped)||!Array.isArray(v.words)||!Array.isArray(v.usedCodes))throw Error('Format invalide');s={...structuredClone(base),...v};s.equipped=s.equipped.filter(id=>!!get(id));render();toast('Sauvegarde importée')}catch{toast('Fichier de sauvegarde invalide')}};
-$('resetBtn').onclick=()=>{if(confirm('Supprimer toutes les récompenses et les codes utilisés sur cet appareil ?')){s=structuredClone(base);render();go('home');toast('Progression réinitialisée')}};
+$('importInput').onchange=async e=>{let f=e.target.files?.[0];if(!f)return;try{let data=JSON.parse(await f.text()),v=data.state||data;if(!v.owned||!Array.isArray(v.equipped)||!Array.isArray(v.words)||!Array.isArray(v.usedCodes))throw Error('Format invalide');s={...structuredClone(base),...v};s.equipped=s.equipped.filter(id=>!!get(id));render();showColorCreation();toast('Sauvegarde importée')}catch{toast('Fichier de sauvegarde invalide')}};
+$('resetBtn').onclick=()=>{if(confirm('Supprimer toutes les récompenses et les codes utilisés sur cet appareil ?')){s=structuredClone(base);render();go('home');showColorCreation();toast('Progression réinitialisée')}};
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));render();
 
 // Couleur d'origine : une seule décision lors de la création du personnage.
 function showColorCreation(){
- if(s.colorChosen)return;
+ if(s.colorChosen===true)return;
  const overlay=$('colorCreation');if(!overlay)return;
  overlay.hidden=false;
- overlay.innerHTML=`<div class="color-creation-dialog" role="dialog" aria-modal="true" aria-labelledby="colorCreationTitle"><h2 id="colorCreationTitle">Choisis la couleur de ton commandant</h2><p>Cette couleur est permanente. Tu pourras obtenir d'autres couleurs grâce aux récompenses de mana.</p><div class="color-choices">${Object.entries(C).map(([key,label])=>`<button type="button" data-initial-color="${key}" style="--color:${cardPalette[key]}"><span class="color-choice-dot"></span>${html(label)}</button>`).join('')}</div><p class="note">Choix définitif pour ce personnage.</p></div>`;
+ overlay.innerHTML=`<div class="color-creation-dialog" role="dialog" aria-modal="true" aria-labelledby="colorCreationTitle"><h2 id="colorCreationTitle">Choisis la couleur de ton commandant</h2><p>Choisis ta couleur de départ. Ce choix est définitif et les autres couleurs pourront être obtenues grâce au mana des boosters.</p><div class="color-choices">${Object.entries(C).map(([key,label])=>`<button type="button" data-initial-color="${key}" style="--color:${cardPalette[key]}"><span class="color-choice-dot"></span>${html(label)}</button>`).join('')}</div><p class="note">Choix définitif pour ce personnage.</p></div>`;
  overlay.querySelectorAll('[data-initial-color]').forEach(button=>button.addEventListener('click',()=>{
   s.baseColor=button.dataset.initialColor;s.colorChosen=true;save();overlay.hidden=true;render();
  }));

@@ -98,3 +98,6 @@ V22 : Affichage des mots sans identifiants techniques wordExtra dans les menus; 
 - Case à cocher dans Éditeur → Types pour le retirer ou le réactiver gratuitement.
 - Les autres types restent inchangés.
 - Anciennes sauvegardes compatibles : absence du champ = Shapeshifter actif.
+
+## V26 : correctif du choix de couleur
+Le menu apparaît aussi pour les joueurs existants qui n'ont jamais confirmé leur couleur. Il réapparaît après une réinitialisation et après import d'une sauvegarde sans choix.
