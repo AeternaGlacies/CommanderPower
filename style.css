@@ -2,3 +2,19 @@
 
 /* CommanderPower V5 — badges de rareté et filtres mobiles */
 .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 14px}.filter-grid label{margin:3px 0;font-size:12px}.filter-grid select{padding:10px 6px;font-size:14px;max-width:100%}.rarity-badge{display:inline-block;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:800;letter-spacing:.2px;vertical-align:middle;margin:2px 0;border:1px solid currentColor;background:#242833}.rarity-badge.rarity-common{color:#e1e3e8;background:#414650}.rarity-badge.rarity-uncommon{color:#a8dfff;background:#124669}.rarity-badge.rarity-rare{color:#ffe28b;background:#665017}.rarity-badge.rarity-mythic{color:#ffd0a0;background:#81351b}.rarity-badge.rarity-legendary{color:#f2c7ff;background:#623078}.item:has(.rarity-badge.rarity-uncommon){border-left:3px solid #3c9fd9}.item:has(.rarity-badge.rarity-rare){border-left:3px solid #e7c46b}.item:has(.rarity-badge.rarity-mythic){border-left:3px solid #e88848}.item:has(.rarity-badge.rarity-legendary){border-left:3px solid #cb7aff}.reward .rarity-badge{margin-bottom:6px}@media(max-width:340px){.filter-grid{grid-template-columns:1fr}}
+
+/* V6 : cartes lisibles, statut distinct de la rareté */
+.item{display:block;padding:14px 15px;border-left-width:4px;margin:10px 0;background:#202733}
+.item.locked{background:#171c25;border-color:#414854;opacity:.79}
+.item.unlocked{background:#222c35}
+.item.is-equipped{box-shadow:inset 0 0 0 1px #67bc92}
+.item-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.status{font-size:12px;font-weight:750;border-radius:5px;padding:5px 8px}
+.status-locked{background:#343943;color:#e4e6e9}.status-owned{background:#184f46;color:#a9f1d2}.status-equipped{background:#225a3e;color:#bff5c8}
+.item-title{font-size:16px;font-weight:750;line-height:1.35;color:#f8f1e4}
+.item-description{color:#d1d8e2;font-size:13px;line-height:1.48;margin:8px 0;overflow-wrap:anywhere}
+.item-foot{display:flex;gap:7px 13px;flex-wrap:wrap;color:#bac3ce;font-size:12px;margin-top:9px}
+.item-actions{display:flex;gap:8px;margin-top:12px}.item-actions button{flex:1;min-height:40px}
+.item.locked .item-title{color:#c4c8ce}.result-count{font-size:12px;color:#aeb9c8;margin:12px 0}.empty-state{padding:18px;background:#202733;border-radius:10px;color:#d3d8e1}
+.rarity-border-common{border-left-color:#a5acb6}.rarity-border-uncommon{border-left-color:#46b4f3}.rarity-border-rare{border-left-color:#f0c75c}.rarity-border-mythic{border-left-color:#ee8748}.rarity-border-legendary{border-left-color:#c77afa}
+.search-label{margin:6px 0 14px}.filter-grid{margin-top:10px}
