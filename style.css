@@ -113,3 +113,20 @@ body.reveal-open{overflow:hidden}
 @keyframes sparkBurst{0%{opacity:0;transform:scale(.25) rotate(-20deg)}35%{opacity:1;transform:scale(1.45) rotate(10deg)}100%{opacity:0;transform:scale(1.9) rotate(25deg)}}
 @keyframes foilSweep{0%{opacity:0;transform:translateX(-90%) rotate(12deg)}40%{opacity:.55}100%{opacity:0;transform:translateX(90%) rotate(12deg)}}
 @media(prefers-reduced-motion:reduce){.reveal-card.next,.reveal-card.revealed,.reveal-card.special-reveal,.reveal-card.special-reveal .rarity-sparkles,.reveal-card.special-reveal::after{animation:none!important}.reveal-card.special-reveal .rarity-sparkles{display:none}}
+
+/* V20 : symboles de mana stylisés et intégrés, en remplacement du texte brut */
+#mana{display:flex;align-items:center;justify-content:flex-end;gap:2px;flex-wrap:wrap;max-width:52%;font-size:inherit}
+.mana-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;width:clamp(18px,4.3vw,24px);height:clamp(18px,4.3vw,24px);border-radius:50%;border:1.5px solid #302a25;color:#19191b;box-shadow:inset 0 1px 2px #fff9,0 1px 2px #0006;line-height:1;overflow:hidden}
+.mana-badge svg{width:80%;height:80%;display:block}
+.mana-badge b{font:bold clamp(12px,3vw,15px) Georgia,serif}
+.mana-badge.mana-hybrid{gap:0}
+.mana-badge .mana-half{width:50%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mana-badge .mana-half svg{width:16px;height:16px;max-width:none;flex:none}
+.mana-badge .mana-half b{font-size:11px}
+
+/* V21 — symboles officiels Scryfall, avec solution de secours locale */
+.mana-badge.official-mana{position:relative;background:transparent;border:0;box-shadow:none;overflow:visible}
+.mana-fallback{display:flex;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;border:1.5px solid #302a25;overflow:hidden;box-shadow:inset 0 1px 2px #fff9,0 1px 2px #0006}
+.mana-official-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0}
+.mana-badge.official-loaded .mana-official-img{opacity:1}
+.mana-badge.official-loaded .mana-fallback{visibility:hidden}

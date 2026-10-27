@@ -49,3 +49,30 @@ Les probabilités du type de booster s'appliquent au sein des raretés autorisé
 - Brillance dorée (rare), orange (mythique) et violette (légendaire), avec balayage foil et étincelles.
 - Bouton Tout révéler et accessibilité « réduire les animations ».
 - Tirages, codes QR et sauvegardes inchangés.
+
+## V19 — Sons immersifs (sans MP3)
+- Ouverture : froissement et déchirure synthétiques du paquet.
+- Révélation : souffle de carte et notes distinctes par rareté.
+- Rare : tintement cristallin et impact grave.
+- Mythique : montée magique et scintillement.
+- Légendaire : fanfare synthétique et accord final.
+- « Tout révéler » reste silencieux pour éviter quatre effets superposés.
+- Audio produit localement par Web Audio, sans réseau ni fichiers audio.
+- Les navigateurs peuvent exiger un geste utilisateur pour activer l'audio.
+
+## V20 — Catégories de mana de la référence visuelle
+- Symboles ronds dessinés localement en SVG : générique (X/Y/Z/nombres), W/U/B/R/G, incolore C, neigeux S, phyrexian et hybride.
+- Ajouts au catalogue : {C}, {2/W}, {2/U}, {2/B}, {2/R}, {2/G} et {C/W}, {C/U}, {C/B}, {C/R}, {C/G}.
+- Les 10 hybrides bicolores, les 5 phyrexians, {S} et les 5 couleurs existantes restent présents.
+- Les glyphes sont des interprétations graphiques simplifiées, pas les illustrations officielles de Wizards.
+- Les symboles Y et Z sont pris en charge par le moteur de rendu mais pas encore comme objets à équiper.
+- Les coûts de types sont 0 PP et le texte de base est masqué lorsqu'une capacité est équipée.
+- L'énergie reste une ressource et n'apparaît pas dans le coût de mana.
+
+## V21 — Symboles officiels et éditeur de nom
+- Les symboles de mana affichent les illustrations officielles via les SVG hébergés par Scryfall (connexion Internet nécessaire au premier chargement).
+- En cas d'absence de réseau ou de chargement impossible, l'application affiche les glyphes SVG simplifiés de V20.
+- Retrait de la pastille de prévisualisation du nom sous les trois menus déroulants ; le nom reste visible sur la carte.
+- Source des SVG : https://svgs.scryfall.io/card-symbols/ (illustrations Magic: The Gathering, Wizards of the Coast). Projet non officiel.
+
+V22 : Affichage des mots sans identifiants techniques wordExtra dans les menus; aperçu du nom rétabli.

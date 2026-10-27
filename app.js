@@ -194,12 +194,16 @@ Object.entries(C).forEach(([code,n])=>add('mana'+code,'Mana '+n+' {'+code+'}','m
 // Mana spéciaux : les symboles hybrides et phyrexians sont des variantes de coût maison.
 add('manaC2','Mana générique {2}','mana',2,'uncommon',{symbol:'2',manaUnits:2});
 add('manaSnow','Mana neigeux {S}','mana',2,'uncommon',{symbol:'S',manaUnits:1,note:'{S} est un coût neigeux ; exige du mana produit par une source neigeuse.'});
+add('manaColorless','Mana incolore {C}','mana',2,'uncommon',{symbol:'C',manaUnits:1});
+[['2/W','Blanc'],['2/U','Bleu'],['2/B','Noir'],['2/R','Rouge'],['2/G','Vert']].forEach(([symbol,label])=>add('hybridTwo'+symbol.replace('/',''),`Mana hybride générique ${label} {${symbol}}`,'mana',3,'rare',{symbol,manaUnits:2}));
+[['C/W','Blanc'],['C/U','Bleu'],['C/B','Noir'],['C/R','Rouge'],['C/G','Vert']].forEach(([symbol,label])=>add('hybridColorless'+symbol.replace('/',''),`Mana hybride incolore ${label} {${symbol}}`,'mana',3,'rare',{symbol,manaUnits:1}));
+
 [['W/U','Blanc / Bleu'],['U/B','Bleu / Noir'],['B/R','Noir / Rouge'],['R/G','Rouge / Vert'],['G/W','Vert / Blanc'],['W/B','Blanc / Noir'],['U/R','Bleu / Rouge'],['B/G','Noir / Vert'],['R/W','Rouge / Blanc'],['G/U','Vert / Bleu']].forEach(([symbol,label])=>add('hybrid'+symbol.replace('/',''),`Mana hybride ${label} {${symbol}}`,'mana',3,'rare',{symbol,manaUnits:1}));
 Object.entries(C).forEach(([code,label])=>add('phyrex'+code,`Mana phyrexian ${label} {${code}/P}`,'mana',5,'mythic',{symbol:code+'/P',manaUnits:1}));
 add('manaEnergy','Énergie {E} (ressource)','mana',5,'mythic',{symbol:'E',manaUnits:0,energy:true,note:'{E} est une ressource, pas du mana : débloque un marqueur d’énergie pour des capacités compatibles (règle maison).'});
 
 const creatureTypes={common:['Brushwagg','Atog','Homarid','Kavu','Noggle','Sable','Monger','Flagbearer','Licid','Dauthi','Cephalid','Ouphe','Phelddagrif'],uncommon:['Clown','Shapeshifter','Plant','Insect','Snake','Bird','Cat','Frog','Rat','Minotaur','Horror'],rare:['Knight','Soldier','Warrior','Cleric','Rogue','Spirit','Zombie','Goblin','Merfolk','Elf'],mythic:['Dragon','Wizard','Vampire','Angel','Demon','Human','Sliver','Elemental','Artificer']};
-Object.entries(creatureTypes).forEach(([rarity,names])=>names.forEach(n=>add('type'+n,n,'type',rarity==='common'?1:rarity==='uncommon'?2:rarity==='rare'?3:4,rarity,{type:n})));
+Object.entries(creatureTypes).forEach(([rarity,names])=>names.forEach(n=>add('type'+n,n,'type',0,rarity,{type:n})));
 ['Brave','Dark','Mad','Lost','Eternal','Forgotten','Bloodthirsty','Crimson','Nameless','Worldbreaker','Godslayer','Unforgiven'].forEach((n,i)=>add('word'+n,n,'name',0,i<4?'common':i<7?'uncommon':'rare',{word:n}));
 // Les noms sont exclusivement des MOTS, jamais des noms de cartes complets.
 [['Scion','uncommon'],['Thinking','uncommon'],['Cap','common'],['Heir','uncommon'],['Blackblade','rare'],['Korlash','rare'],['Shadowborn','rare'],['Moonlit','uncommon'],['Whispering','uncommon'],['Arcane','uncommon'],['Voidborn','rare'],['Dread','uncommon'],['Stormbound','rare'],['Unseen','uncommon'],['Wandering','common'],['Radiant','uncommon'],['Ancient','rare'],['Sovereign','rare'],['Twilight','uncommon'],['Ember','common']].forEach(([n,r])=>add('wordExtra'+n,n,'name',0,r,{word:n}));
@@ -274,7 +278,7 @@ let tab='abilities',filter='all',stream=null,scanTimer=null;
 const $=id=>document.getElementById(id),html=(v)=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const own=id=>Number(s.owned[id]||0), eq=id=>s.equipped.filter(x=>x===id).length, get=id=>rewards.find(r=>r.id===id);
 const equipped=()=>s.equipped.map(get).filter(Boolean);
-const points=()=>equipped().reduce((a,r)=>a+r.cost,0)+(s.mode==='reduce'?s.delta*3:0);
+const points=()=>equipped().reduce((a,r)=>a+(r.kind==='type'?0:r.cost),0)+(s.mode==='reduce'?s.delta*3:0);
 const budget=()=>10+(s.mode==='increase'?s.delta*2:0);
 const generic=()=>Math.max(0,5+(s.mode==='increase'?s.delta:0)-(s.mode==='reduce'?s.delta:0)-equipped().filter(r=>r.kind==='mana').reduce((sum,r)=>sum+(r.manaUnits??1),0));
 const mana=()=>`${s.hasX?'{X}':''}{${generic()}}`+equipped().filter(r=>r.kind==='mana'&&!r.energy).map(r=>'{'+r.symbol+'}').join('');
@@ -283,9 +287,68 @@ const power=()=>{let p=3,t=3;equipped().forEach(r=>{p+=r.p||0;t+=r.t||0});return
 const colors=()=>{let arr=[s.baseColor,...equipped().filter(r=>r.kind==='mana').flatMap(r=>r.symbol.match(/[WUBRG]/g)||[])];return [...new Set(arr)]};
 function save(){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){toast('Stockage saturé : exportez votre sauvegarde ou choisissez une image plus petite.')}}
 function toast(t){$('toast').textContent=t;$('toast').style.display='block';clearTimeout(window.toastTimeout);window.toastTimeout=setTimeout(()=>$('toast').style.display='none',3200)}
-function card(){let card=$('card');card.dataset.color=colors().length===1?colors()[0]:'M';$('cardName').textContent=name();$('mana').textContent=mana();$('types').textContent='Legendary Creature — Shapeshifter'+equipped().filter(r=>r.kind==='type').map(r=>' '+r.type).join('');$('rules').textContent='As The Prismatic Piper enters, choose a color.\n'+equipped().filter(r=>r.kind==='ability'&&(!r.requiresX||s.hasX)).map(r=>r.text).join('\n');$('power').textContent=power();let art=equipped().find(r=>r.kind==='art');$('art').style.backgroundImage=s.image?`url("${s.image.replace(/["\\]/g,'')}")`:(art?art.gradient:'radial-gradient(circle at 50% 35%,#f3c178 0%,#aa4b5e 28%,#392b65 60%,#0d1931 100%)');$('art').querySelector('small').textContent=name().toUpperCase();$('homePP').textContent=`${points()} / ${budget()} PP • ${equipped().filter(r=>r.kind==='ability').length}/3 capacités`}
+// Symboles de mana en SVG intégrés, sans images externes.
+const manaColors={W:'#f3e6b8',U:'#a8d7f0',B:'#b1a7a9',R:'#f3a17b',G:'#9ccdb0',C:'#c9c9c9',S:'#e7edf7',E:'#f4e0a0'};
+function manaIcon(letter){
+ const common='fill="currentColor" stroke="none"';
+ const paths={
+  W:`<circle cx="12" cy="12" r="4" ${common}/>${Array.from({length:8},(_,i)=>`<path d="M12 1.8v4.1" stroke="currentColor" stroke-width="2.5" transform="rotate(${i*45} 12 12)"/>`).join('')}`,
+  U:`<path d="M12 2C10 6 5 11 5 15a7 7 0 0 0 14 0C19 11 14 6 12 2Z" ${common}/><path d="M9 17q3 3 6-1" stroke="#ffffff99" stroke-width="1.6" fill="none"/>`,
+  B:`<path d="M7 18v-4a7 7 0 1 1 10 0v4H7Zm-1 1h12v3H6z" ${common}/><circle cx="9" cy="12" r="1.6" fill="#ddd"/><circle cx="15" cy="12" r="1.6" fill="#ddd"/>`,
+  R:`<path d="M12 2c2 5-1 6 2 9 2-1 3-4 3-5 6 8 3 16-5 16S3 16 6 11c1 3 3 3 3 3-2-5 1-8 3-12Z" ${common}/>`,
+  G:`<path d="M12 2C3 6 2 12 5 17c3 5 11 6 14-1 2-5-1-11-7-14Z" ${common}/><path d="M12 22V9m0 6-5-3m5 0 5-4" stroke="#d7f0d5" stroke-width="1.6" fill="none"/>`,
+  C:`<path d="M12 2 22 12 12 22 2 12Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 7 17 12 12 17 7 12Z" ${common}/>`,
+  S:`<path d="M12 2v20M2 12h20M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="2.3"/><path d="m12 2-2 3m2-3 2 3m8 7-3-2m3 2-3 2" stroke="currentColor" stroke-width="1.3" fill="none"/>`,
+  P:`<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3v18M12 5c10 0 10 11 0 11" fill="none" stroke="currentColor" stroke-width="3"/>`,
+  E:`<path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1Z" ${common}/>`
+ };
+ return `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[letter]||''}</svg>`;
+}
+// Illustrations officielles servies par Scryfall (Magic: The Gathering).
+// Si elles sont inaccessibles, le dessin SVG local reste disponible.
+function manaBadge(token){
+ const raw=String(token).replace(/[{}]/g,'');
+ const halves=raw.split('/');
+ const isNumber=/^\d+$/.test(raw);
+ const isVariable=['X','Y','Z'].includes(raw);
+ const background=halves.length===2
+  ?`linear-gradient(130deg,${manaColors[halves[0]]||'#e5e0d6'} 49%,${manaColors[halves[1]]||'#e5e0d6'} 51%)`
+  :(manaColors[raw]||'#c8c5c2');
+ let fallback;
+ if(halves.length===2){
+  const glyph=v=>/^\d+$/.test(v)?`<b>${v}</b>`:manaIcon(v);
+  fallback=`<span class="mana-half">${glyph(halves[0])}</span><span class="mana-half">${glyph(halves[1])}</span>`;
+ }else fallback=(isNumber||isVariable)?`<b>${html(raw)}</b>`:manaIcon(raw);
+ // Le nom des fichiers Scryfall utilise la forme 2W, WP, WU, CW, etc.
+ const officialName=raw.replace(/\//g,'');
+ const valid=/^(?:[WUBRGCSEXYZ]|\d{1,3}|[WUBRGC]{2}|2[WUBRG]|[WUBRG]P)$/.test(officialName);
+ const uri=valid?`https://svgs.scryfall.io/card-symbols/${officialName}.svg`:'';
+ return `<span class="mana-badge official-mana" role="img" aria-label="Mana ${html(raw)}"><span class="mana-fallback" style="background:${background}">${fallback}</span>${uri?`<img class="mana-official-img" src="${uri}" alt="" loading="eager" decoding="async" onload="this.parentElement.classList.add('official-loaded')" onerror="this.remove()">`:''}</span>`;
+}
+
+function manaCostVisual(){
+ const tokens=[];
+ if(s.hasX)tokens.push('X');
+ const base=generic();
+ if(base>0)tokens.push(String(base));
+ for(const r of equipped().filter(r=>r.kind==='mana'&&!r.energy))tokens.push(r.symbol);
+ return tokens.map(manaBadge).join('');
+}
+function card(){
+ let card=$('card');card.dataset.color=colors().length===1?colors()[0]:'M';
+ $('cardName').textContent=name();$('mana').innerHTML=manaCostVisual();
+ $('types').textContent='Legendary Creature — Shapeshifter'+equipped().filter(r=>r.kind==='type').map(r=>' '+r.type).join('');
+ const abilities=equipped().filter(r=>r.kind==='ability'&&(!r.requiresX||s.hasX)).map(r=>r.text);
+ $('rules').textContent=abilities.length?abilities.join('\n'):'As The Prismatic Piper enters, choose a color.';
+ $('power').textContent=power();
+ let art=equipped().find(r=>r.kind==='art');
+ $('art').style.backgroundImage=s.image?`url("${s.image.replace(/["\\]/g,'')}")`:(art?art.gradient:'radial-gradient(circle at 50% 35%,#f3c178 0%,#aa4b5e 28%,#392b65 60%,#0d1931 100%)');
+ $('art').querySelector('small').textContent=name().toUpperCase();
+ $('homePP').textContent=`${points()} / ${budget()} PP • ${equipped().filter(r=>r.kind==='ability').length}/3 capacités`;
+}
+
 function render(){card();$('budget').textContent=`${points()} / ${budget()} PP • ${equipped().filter(r=>r.kind==='ability').length}/3 capacités`;editor();collection();save()}
-function canEquip(r){if(eq(r.id)>=own(r.id))return 'Aucun exemplaire disponible';if(r.kind==='ability'&&equipped().filter(x=>x.kind==='ability').length>=3)return 'Maximum de 3 capacités';if(r.kind==='ability'&&r.requiresX&&!s.hasX)return 'Nécessite {X}';if(r.kind==='mana'&&generic()<(r.manaUnits??1))return 'Pas assez de mana générique à remplacer';if(r.kind==='type'&&eq(r.id))return 'Type déjà équipé';if(r.kind==='art'&&equipped().some(x=>x.kind==='art'))return 'Une seule image à la fois';if(r.kind==='ability'&&eq(r.id))return 'Capacité déjà équipée';if(points()+r.cost>budget())return 'Budget PP insuffisant';return ''}
+function canEquip(r){if(eq(r.id)>=own(r.id))return 'Aucun exemplaire disponible';if(r.kind==='ability'&&equipped().filter(x=>x.kind==='ability').length>=3)return 'Maximum de 3 capacités';if(r.kind==='ability'&&r.requiresX&&!s.hasX)return 'Nécessite {X}';if(r.kind==='mana'&&generic()<(r.manaUnits??1))return 'Pas assez de mana générique à remplacer';if(r.kind==='type'&&eq(r.id))return 'Type déjà équipé';if(r.kind==='art'&&equipped().some(x=>x.kind==='art'))return 'Une seule image à la fois';if(r.kind==='ability'&&eq(r.id))return 'Capacité déjà équipée';if(points()+(r.kind==='type'?0:r.cost)>budget())return 'Budget PP insuffisant';return ''}
 function toggle(id){let r=get(id);if(!r)return;let why=canEquip(r);if(why){toast(why);return}s.equipped.push(id);render()}
 function remove(id){let i=s.equipped.lastIndexOf(id);if(i>=0)s.equipped.splice(i,1);render()}
 const filters={edit:{ownership:'all',rarity:'all',query:''},collection:{ownership:'owned',rarity:'all',query:''}};
@@ -297,7 +360,7 @@ function sortRewards(list){const rank={common:0,uncommon:1,rare:2,mythic:3,legen
 function listEditor(kind){let list=sortRewards(rewards.filter(r=>r.kind===kind&&matchesFilters(r,'edit')));return `<p class="result-count">${list.length} résultat(s)</p>`+(list.map(r=>item(r,true)).join('')||'<p class="empty-state">Aucune récompense ne correspond à ces filtres.</p>')}
 function editor(){let e=$('editor');let explanations={abilities:'Maximum 3 capacités équipées. Les coûts des stickers Unfinity correspondent à leurs tickets ; les autres coûts sont des propositions.',stats:'Bonus cumulables. Chaque exemplaire équipé ajoute ses statistiques.',types:'Ajoute des types de créatures à Shapeshifter.',mana:'Les symboles colorés, hybrides, neigeux et phyrexians modifient le coût. L’énergie est une ressource distincte (règle maison). Réduction et augmentation sont exclusives ; X reste indépendant.',name:'3 mots maximum. Chaque occurrence utilise un exemplaire de ta collection.',art:'Image personnelle uniquement : choisis une image de ton téléphone ou une URL HTTPS. Aucune image dans les boosters.'};let kind={abilities:'ability',stats:'stat',types:'type',mana:'mana',name:'name',art:'art'}[tab];let controls=`<p class="sectionhelp">${explanations[tab]}</p>${filterControls('edit')}`;
 if(tab==='abilities'||tab==='stats'||tab==='types')e.innerHTML=controls+'<div id="editResults">'+listEditor(kind)+'</div>';
-if(tab==='name'){let options=(i)=>'<option value="">— Vide —</option>'+Object.keys(s.owned).filter(w=>!get(w)||get(w)?.kind==='name').filter(w=>own(w)>0).map(w=>`<option value="${html(w)}" ${s.words[i]===w?'selected':''}>${html(w)} (${own(w)})</option>`).join('');e.innerHTML=`<p class="sectionhelp">${explanations.name}</p><div class="wordslots">${[0,1,2].map(i=>`<select data-word="${i}">${options(i)}</select>`).join('')}</div><p class="pill">${html(name())}</p>${own('legendword')?`<label>Mot légendaire personnalisé<input id="customWord" maxlength="24" value="${html(s.customWord)}" placeholder="Un seul mot"></label><button class="primary" id="customSave">Créer mon mot</button>`:''}${filterControls('edit')}<div id="editResults">${listEditor('name')}</div>`}
+if(tab==='name'){let options=(i)=>'<option value="">— Vide —</option>'+Object.keys(s.owned).filter(w=>!get(w)||get(w)?.kind==='name').filter(w=>own(w)>0).map(w=>`<option value="${html(w)}" ${s.words[i]===w?'selected':''}>${html(get(w)?.word||w.replace(/^wordExtra/,''))} (${own(w)})</option>`).join('');e.innerHTML=`<p class="sectionhelp">${explanations.name}</p><div class="wordslots">${[0,1,2].map(i=>`<select data-word="${i}">${options(i)}</select>`).join('')}</div><p class="pill">${html(name())}</p>${own('legendword')?`<label>Mot légendaire personnalisé<input id="customWord" maxlength="24" value="${html(s.customWord)}" placeholder="Un seul mot"></label><button class="primary" id="customSave">Créer mon mot</button>`:''}${filterControls('edit')}<div id="editResults">${listEditor('name')}</div>`}
 if(tab==='mana')e.innerHTML=`<p class="sectionhelp">${explanations.mana}</p><label>Couleur de départ<select id="baseColor">${Object.entries(C).map(([k,v])=>`<option value="${k}" ${s.baseColor===k?'selected':''}>${v}</option>`).join('')}</select></label><label>Modification du mana<select id="manaMode"><option value="none" ${s.mode==='none'?'selected':''}>Aucune</option><option value="reduce" ${s.mode==='reduce'?'selected':''}>Réduction (3 PP par mana)</option><option value="increase" ${s.mode==='increase'?'selected':''}>Augmentation (+2 PP par mana)</option></select></label><label>Quantité (0 à 3)<input id="manaDelta" type="number" min="0" max="3" value="${s.delta}"></label><label class="row"><input id="hasX" type="checkbox" style="width:auto" ${s.hasX?'checked':''}> Activer {X}</label><p class="pill">Coût actuel : ${html(mana())}</p>${filterControls('edit')}<div id="editResults">${listEditor('mana')}</div>`;
 if(tab==='art')e.innerHTML=`<p class="sectionhelp">${explanations.art}</p><label>📷 Choisir une image sur mon téléphone<input id="imageFile" type="file" accept="image/*"></label><button id="removeImage" type="button">Retirer mon image</button><label>Image en ligne (HTTPS)<input id="imageURL" type="url" value="${html(s.image.startsWith('https://')?s.image:'')}" placeholder="https://..."></label><button id="setImage" class="primary">Appliquer</button>`;
 }
@@ -351,25 +414,85 @@ function closeBoosterReveal(){
  if(overlay){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');overlay.innerHTML='';}
  document.body.classList.remove('reveal-open');
 }
-let boosterAudio=null;
-function revealSound(rarity){
+// V19 : effets sonores synthétisés hors ligne, déclenchés par une action du joueur.
+let boosterAudio=null, boosterNoise=null;
+function audioEngine(){
  try{
-  const Audio=window.AudioContext||window.webkitAudioContext;
-  if(!Audio)return;
-  boosterAudio=boosterAudio||new Audio();
-  if(boosterAudio.state==='suspended')boosterAudio.resume();
-  const notes={common:[392,523],uncommon:[392,523,659],rare:[523,659,784,1047],mythic:[440,659,880,1175,1760],legendary:[523,784,1047,1568,2093]}[rarity]||[392,523];
-  const now=boosterAudio.currentTime;
-  notes.forEach((hz,i)=>{
-   const o=boosterAudio.createOscillator(),g=boosterAudio.createGain(),t=now+i*.095;
-   o.type=['mythic','legendary'].includes(rarity)?'triangle':'sine';
-   o.frequency.setValueAtTime(hz,t);
-   g.gain.setValueAtTime(.0001,t);
-   g.gain.exponentialRampToValueAtTime(.055,t+.015);
-   g.gain.exponentialRampToValueAtTime(.0001,t+.26);
-   o.connect(g).connect(boosterAudio.destination);o.start(t);o.stop(t+.28);
-  });
- }catch(e){/* L'audio reste facultatif. */}
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(!Ctx)return null;
+  boosterAudio=boosterAudio||new Ctx();
+  if(boosterAudio.state==='suspended')boosterAudio.resume().catch(()=>{});
+  if(!boosterNoise){
+   const length=Math.round(boosterAudio.sampleRate*1.5);
+   boosterNoise=boosterAudio.createBuffer(1,length,boosterAudio.sampleRate);
+   const samples=boosterNoise.getChannelData(0);
+   for(let i=0;i<length;i++)samples[i]=Math.random()*2-1;
+  }
+  return boosterAudio;
+ }catch(e){return null}
+}
+function soundTone(ctx,freq,start,duration,volume=.06,wave='sine',endFreq=null){
+ const osc=ctx.createOscillator(),gain=ctx.createGain();
+ osc.type=wave;osc.frequency.setValueAtTime(freq,start);
+ if(endFreq)osc.frequency.exponentialRampToValueAtTime(endFreq,start+duration);
+ gain.gain.setValueAtTime(.0001,start);
+ gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),start+.014);
+ gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+ osc.connect(gain).connect(ctx.destination);osc.start(start);osc.stop(start+duration+.01);
+}
+function soundNoise(ctx,start,duration,volume=.08,filterFreq=1300,endFreq=250){
+ const src=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain();
+ src.buffer=boosterNoise;filter.type='bandpass';filter.Q.value=.7;
+ filter.frequency.setValueAtTime(filterFreq,start);
+ filter.frequency.exponentialRampToValueAtTime(endFreq,start+duration);
+ gain.gain.setValueAtTime(.0001,start);
+ gain.gain.exponentialRampToValueAtTime(volume,start+.025);
+ gain.gain.exponentialRampToValueAtTime(.0001,start+duration);
+ src.connect(filter).connect(gain).connect(ctx.destination);
+ src.start(start);src.stop(start+duration+.01);
+}
+function boosterOpenSound(){
+ const ctx=audioEngine();if(!ctx)return;
+ const t=ctx.currentTime+.02;
+ // Froissement puis déchirure du sachet.
+ soundNoise(ctx,t,.26,.075,750,2400);
+ soundNoise(ctx,t+.15,.35,.095,3500,850);
+ soundTone(ctx,660,t+.34,.22,.045,'triangle',990);
+}
+function revealSound(rarity){
+ const ctx=audioEngine();if(!ctx)return;
+ const t=ctx.currentTime+.015;
+ // Glissement de la carte, suivi d'une signature musicale selon sa rareté.
+ soundNoise(ctx,t,.14,.045,2300,470);
+ const patterns={
+  common:[523,659],
+  uncommon:[523,659,784],
+  rare:[587,784,1175,1568],
+  mythic:[440,659,880,1318,1760],
+  legendary:[523,784,1047,1568,2093,2637]
+ };
+ const notes=patterns[rarity]||patterns.common;
+ const delay=rarity==='legendary'?.115:.09;
+ notes.forEach((f,i)=>{
+  soundTone(ctx,f,t+.13+i*delay,rarity==='legendary'?.52:.31,
+    rarity==='legendary'?.042:.052,
+    ['mythic','legendary'].includes(rarity)?'triangle':'sine');
+ });
+ if(['rare','mythic','legendary'].includes(rarity)){
+  // Impact profond + scintillement cristallin.
+  soundTone(ctx,160,t+.14,.29,.085,'triangle',65);
+  soundNoise(ctx,t+.18,.24,.034,4200,1300);
+ }
+ if(['mythic','legendary'].includes(rarity)){
+  // Montée magique, plus longue pour les légendaires.
+  const length=rarity==='legendary'?.95:.64;
+  soundTone(ctx,210,t+.13,length,.045,'sawtooth',rarity==='legendary'?840:620);
+  soundTone(ctx,1047,t+.38,.55,.028,'sine');
+ }
+ if(rarity==='legendary'){
+  // Final de fanfare en accord, sans fichier MP3.
+  [523,659,784,1047].forEach(f=>soundTone(ctx,f,t+.78,.72,.035,'triangle'));
+ }
 }
 function animateBooster(type,drops){
  closeBoosterReveal();
@@ -381,12 +504,12 @@ function animateBooster(type,drops){
  const prompt=overlay.querySelector('.reveal-prompt'),finish=$('finishReveal'),skip=$('skipReveal');
  let index=0;
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- function reveal(i){
+ function reveal(i,silent=false){
   if(i!==index)return;
   const card=cards[i];
   card.classList.remove('next');card.classList.add('revealed');card.disabled=true;
   if(!reduced&&['rare','mythic','legendary'].includes(drops[i].rarity))card.classList.add('special-reveal');
-  revealSound(drops[i].rarity);
+  if(!silent)revealSound(drops[i].rarity);
   index++;
   if(index===cards.length){
    prompt.textContent='Tes 4 récompenses sont dans ta collection !';
@@ -397,9 +520,10 @@ function animateBooster(type,drops){
   }
  }
  cards.forEach((card,i)=>card.onclick=()=>reveal(i));
- skip.onclick=()=>{while(index<cards.length)reveal(index)};
+ skip.onclick=()=>{while(index<cards.length)reveal(index,true)};
  finish.onclick=()=>{closeBoosterReveal();go('collection')};
  pack.classList.add('burst');overlay.classList.add('show-cards');
+ boosterOpenSound();
  cards[0].classList.add('next');
 }
 
