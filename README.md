@@ -1,4 +1,4 @@
-# Commander Evolution — PWA V2
+# CommanderPower — PWA V2
 
 Application mobile autonome pour créer un commandant personnalisé dans un format Magic maison.
 
@@ -30,3 +30,14 @@ Les chemins sont relatifs : fonctionne aussi sur `https://utilisateur.github.io/
 - Le mode X n'est pas encore un objet à débloquer ; il sert à tester les capacités X.
 - L'identité de couleur dérivée des symboles présents dans les textes de capacités n'est pas calculée automatiquement.
 - Application non officielle, non affiliée à Wizards of the Coast. Utiliser des illustrations dont vous possédez les droits.
+
+Dépôt : https://github.com/AeternaGlacies/CommanderPower
+Adresse prévue : https://aeternaglacies.github.io/CommanderPower/
+
+
+## Image personnelle et sauvegarde
+
+Dans **Modifier > Image**, sélectionnez une image de votre téléphone. Elle est réduite localement (1000 px max, JPEG) puis conservée dans le stockage local du navigateur. Les choix du commandant sont sauvegardés automatiquement après chaque modification. L’export JSON dans **Paramètres** inclut aussi la photo personnelle. Importez ce fichier sur un autre appareil pour retrouver votre commandant. Attention : vider les données du navigateur efface la sauvegarde locale ; conservez un export JSON.
+
+## V4 — Capacités
+Catalogue élargi de capacités maison, avec recherche dans Modifier > Capacités, rareté et coût en PP. Les capacités verrouillées sont visibles et se débloquent via boosters. Aucune capacité de tutorisation non-terrain. Les 96 stickers officiels Unfinity ne sont **pas** encore reproduits ou vérifiés.
